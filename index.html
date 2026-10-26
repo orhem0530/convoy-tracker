@@ -151,7 +151,7 @@
         </div>
     </header>
 
-    <!-- Emergency Red Alert Banner -->
+    <!-- Emergency / Arrival Alert Banner -->
     <div id="hq-emergency-banner" class="hidden bg-lcars-red text-white px-3 py-2 font-lcars text-center uppercase tracking-widest text-xs z-50 flex items-center justify-between gap-2 animate-pulse">
         <div class="flex items-center gap-2">
             <i class="fa-solid fa-triangle-exclamation text-base"></i>
@@ -347,6 +347,7 @@
         <div id="admin-screen" class="hidden h-full w-full flex flex-col z-10">
             <div class="bg-black flex border-b border-lcars-blue/30 shrink-0 overflow-x-auto font-lcars tracking-wider uppercase text-xs">
                 <button onclick="app.switchAdminTab('dashboard')" id="admin-tab-dashboard" class="flex-1 py-2.5 px-3 border-b-2 border-lcars-blue text-lcars-blue bg-lcars-blue/10 whitespace-nowrap transition-colors"><i class="fa-solid fa-radar mr-1.5"></i>Fleet Radar</button>
+                <button onclick="app.switchAdminTab('analytics')" id="admin-tab-analytics" class="flex-1 py-2.5 px-3 border-b-2 border-transparent text-gray-400 hover:text-white whitespace-nowrap transition-colors"><i class="fa-solid fa-chart-line mr-1.5"></i>Fleet Analytics</button>
                 <button onclick="app.switchAdminTab('manage')" id="admin-tab-manage" class="flex-1 py-2.5 px-3 border-b-2 border-transparent text-gray-400 hover:text-white whitespace-nowrap transition-colors"><i class="fa-solid fa-shuttle-space mr-1.5"></i>Vessel Roster</button>
                 <button onclick="app.switchAdminTab('settings')" id="admin-tab-settings" class="flex-1 py-2.5 px-3 border-b-2 border-transparent text-gray-400 hover:text-white whitespace-nowrap transition-colors"><i class="fa-solid fa-shield-halved mr-1.5"></i>Security Protocols</button>
             </div>
@@ -404,7 +405,47 @@
                 </div>
             </div>
 
-            <!-- Tab 2: Manage Units -->
+            <!-- Tab 2: Fleet Performance Analytics -->
+            <div id="admin-view-analytics" class="hidden flex-1 overflow-y-auto p-4 space-y-4 bg-black relative font-lcars">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="lcars-panel p-4 rounded-2xl border border-lcars-blue/30" style="border-left-color: #99CCFF;">
+                        <p class="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Total Commissioned</p>
+                        <p id="analytics-total-vessels" class="text-2xl font-bold text-lcars-blue">0</p>
+                    </div>
+                    <div class="lcars-panel p-4 rounded-2xl border border-lcars-gold/30">
+                        <p class="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Active in Transit</p>
+                        <p id="analytics-active-transit" class="text-2xl font-bold text-lcars-gold">0</p>
+                    </div>
+                    <div class="lcars-panel p-4 rounded-2xl border border-lcars-orange/30">
+                        <p class="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Docked / Pit Stop</p>
+                        <p id="analytics-docked" class="text-2xl font-bold text-lcars-orange">0</p>
+                    </div>
+                    <div class="lcars-panel p-4 rounded-2xl border border-lcars-red/30">
+                        <p class="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Red Alerts / SOS</p>
+                        <p id="analytics-sos" class="text-2xl font-bold text-lcars-red">0</p>
+                    </div>
+                </div>
+
+                <div class="lcars-panel p-5 rounded-3xl border border-lcars-blue/30 mt-4" style="border-left-color: #99CCFF;">
+                    <h3 class="text-base font-lcars text-lcars-blue font-bold mb-3 uppercase"><i class="fa-solid fa-chart-pie mr-1.5"></i>Fleet Telemetry Summary</h3>
+                    <div class="space-y-3 text-xs text-gray-300">
+                        <div class="flex justify-between border-b border-lcars-surface pb-2">
+                            <span>Average Fleet Speed:</span>
+                            <span id="analytics-avg-speed" class="text-lcars-gold font-bold">0.0 km/h</span>
+                        </div>
+                        <div class="flex justify-between border-b border-lcars-surface pb-2">
+                            <span>Subspace Connection Stability:</span>
+                            <span class="text-green-400 font-bold">OPTIMAL (100%)</span>
+                        </div>
+                        <div class="flex justify-between pb-1">
+                            <span>Central Databank Sync:</span>
+                            <span class="text-lcars-blue font-bold">FIREBASE REALTIME ACTIVE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Manage Units -->
             <div id="admin-view-manage" class="hidden flex-1 overflow-y-auto p-4 space-y-6 bg-black relative font-lcars">
                 <div class="lcars-panel p-4 rounded-3xl border border-lcars-blue/30 relative overflow-hidden" style="border-left-color: #99CCFF;">
                     <h3 class="text-base font-lcars text-lcars-blue font-bold mb-3 uppercase relative z-10"><i class="fa-solid fa-plus mr-1.5"></i>Commission Vessel</h3>
@@ -439,7 +480,7 @@
                 </div>
             </div>
 
-            <!-- Tab 3: Security Settings -->
+            <!-- Tab 4: Security Settings -->
             <div id="admin-view-settings" class="hidden flex-1 overflow-y-auto p-4 relative flex justify-center items-center bg-black">
                 <div class="lcars-panel p-6 rounded-3xl max-w-sm w-full border border-lcars-blue/30 shadow-2xl" style="border-left-color: #99CCFF;">
                     <h2 class="text-base font-lcars text-lcars-blue font-bold mb-4 uppercase tracking-wider"><i class="fa-solid fa-shield-halved mr-1.5"></i>Command Security</h2>
@@ -582,7 +623,7 @@
             adminPasswordHash: 'admin123',
             allMessages: [], unitChatTab: 'private', adminChatTarget: 'group', unitsList: {}, 
             mediaRecorder: null, audioChunks: [], isRecording: false, activeEmergencyUnit: null,
-            latestCoords: null, destCoords: null, destMarker: null, routeLine: null,
+            latestCoords: null, destCoords: null, destMarker: null, routeLine: null, hasArrived: false,
 
             showUnitSetup: () => showScreen('unit-setup-screen'),
             showAdminLogin: () => showScreen('admin-login-screen'),
@@ -677,6 +718,7 @@
                 app.unitChatTab = 'private';
                 app.latestCoords = null;
                 app.destCoords = null;
+                app.hasArrived = false;
                 
                 document.getElementById('unit-name-input').value = '';
                 document.getElementById('unit-pin-input').value = '';
@@ -795,7 +837,6 @@
                                 app.unitMarker.setLatLng([latitude, longitude]);
                             }
 
-                            // Update live navigation vector if destination is set
                             if(app.destCoords) {
                                 app.updateNavigationVector();
                             }
@@ -828,6 +869,7 @@
                     const destLat = parseFloat(results[0].lat);
                     const destLng = parseFloat(results[0].lon);
                     app.destCoords = [destLat, destLng];
+                    app.hasArrived = false;
 
                     const destIconHtml = `
                         <div class="w-8 h-8 rounded-full bg-lcars-red flex items-center justify-center text-white border-2 border-white shadow-[0_0_10px_#CC3333]">
@@ -866,17 +908,27 @@
                     opacity: 0.8
                 }).addTo(app.unitMap);
 
-                // Calculate distance in KM
                 const from = L.latLng(app.latestCoords[0], app.latestCoords[1]);
                 const to = L.latLng(app.destCoords[0], app.destCoords[1]);
-                const distanceKm = from.distanceTo(to) / 1000;
+                const distanceMeters = from.distanceTo(to);
+                const distanceKm = distanceMeters / 1000;
 
                 const navLabel = document.getElementById('nav-instruction-label');
-                navLabel.innerHTML = `COURSE: <b class="text-lcars-gold">${distanceKm >= 1 ? distanceKm.toFixed(2) + ' km' : (distanceKm * 1000).toFixed(0) + ' m'}</b> TO TARGET`;
+                navLabel.innerHTML = `COURSE: <b class="text-lcars-gold">${distanceKm >= 1 ? distanceKm.toFixed(2) + ' km' : distanceMeters.toFixed(0) + ' m'}</b> TO TARGET`;
+
+                // Proximity Arrival Alert (within 200 meters)
+                if(distanceMeters <= 200 && !app.hasArrived) {
+                    app.hasArrived = true;
+                    app.updateMyUnitStatus('pit_stop');
+                    document.getElementById('emergency-banner-text').innerText = `ARRIVAL ALERT: TARGET DESTINATION REACHED`;
+                    document.getElementById('hq-emergency-banner').classList.remove('hidden');
+                    showAlert("DESTINATION REACHED", "Vessel has successfully arrived at the designated coordinates.");
+                }
             },
 
             clearDestination: () => {
                 app.destCoords = null;
+                app.hasArrived = false;
                 if(app.destMarker && app.unitMap) {
                     app.unitMap.removeLayer(app.destMarker);
                     app.destMarker = null;
@@ -944,12 +996,22 @@
                 
                 onSnapshot(unitsRef, (snapshot) => {
                     let activeCount = 0;
+                    let transitCount = 0;
+                    let dockedCount = 0;
+                    let sosCount = 0;
+                    let totalSpeed = 0;
                     const updatedUnits = {};
                     let emergencyTriggered = false;
 
                     snapshot.forEach(docSnap => {
                         const data = docSnap.data();
                         updatedUnits[docSnap.id] = data;
+
+                        // Analytics stats calculation
+                        if(data.status === 'in_transit') transitCount++;
+                        else if(data.status === 'pit_stop') dockedCount++;
+                        if(data.sos || data.status === 'breakdown') sosCount++;
+                        totalSpeed += parseFloat(data.speed || 0);
 
                         if (data.sos) {
                             emergencyTriggered = true;
@@ -998,7 +1060,7 @@
                         }
                     });
 
-                    if(!emergencyTriggered && app.activeEmergencyUnit === null) {
+                    if(!emergencyTriggered && app.activeEmergencyUnit === null && !app.hasArrived) {
                         document.getElementById('hq-emergency-banner').classList.add('hidden');
                     }
 
@@ -1013,11 +1075,20 @@
                     app.updateAdminDropdown();
                     app.renderManageUnits();
                     document.getElementById('active-units-count').innerText = activeCount;
+
+                    // Update Analytics Dash Stats
+                    const totalEntries = Object.keys(updatedUnits).length;
+                    document.getElementById('analytics-total-vessels').innerText = totalEntries;
+                    document.getElementById('analytics-active-transit').innerText = transitCount;
+                    document.getElementById('analytics-docked').innerText = dockedCount;
+                    document.getElementById('analytics-sos').innerText = sosCount;
+                    const avgSpeed = totalEntries > 0 ? (totalSpeed / totalEntries).toFixed(1) : '0.0';
+                    document.getElementById('analytics-avg-speed').innerText = `${avgSpeed} km/h`;
                 });
             },
 
             switchAdminTab: (tabId) => {
-                ['dashboard', 'manage', 'settings'].forEach(id => {
+                ['dashboard', 'analytics', 'manage', 'settings'].forEach(id => {
                     document.getElementById(`admin-view-${id}`).classList.add('hidden');
                     const btn = document.getElementById(`admin-tab-${id}`);
                     btn.classList.remove('border-lcars-blue', 'text-lcars-blue', 'bg-lcars-blue/10');
