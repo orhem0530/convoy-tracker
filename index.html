@@ -105,7 +105,6 @@
 
         #admin-map, #unit-map { height: 100% !important; width: 100% !important; position: absolute !important; top: 0; left: 0; z-index: 1; background: #050811;}
         
-        /* Dark mode filter for standard openstreetmap tiles */
         .leaflet-tile {
             filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
         }
@@ -287,12 +286,34 @@
             <!-- Unit MAP View -->
             <div id="unit-view-map" class="flex-1 relative flex flex-col bg-lcars-panel w-full h-full">
                 <div id="unit-map"></div>
-                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[400] lcars-panel px-4 py-2 rounded-2xl border border-lcars-gold/50 pointer-events-none text-center shadow-lg w-[90%] max-w-xs">
-                    <p class="text-[9px] font-lcars text-lcars-purple tracking-widest uppercase mb-0.5">Subspace Coordinates</p>
+                
+                <!-- Destination Search & Navigation Bar Overlay -->
+                <div class="absolute top-3 left-3 right-16 z-[400] lcars-panel p-2 rounded-2xl border border-lcars-gold/50 shadow-xl flex gap-1.5 items-center">
+                    <input type="text" id="nav-destination-input" placeholder="ENTER DESTINATION ADDRESS..." class="flex-1 bg-black border border-lcars-gold/40 rounded-xl px-3 py-2 text-lcars-gold font-lcars text-xs uppercase focus:outline-none focus:border-lcars-blue">
+                    <button onclick="app.setDestination()" class="lcars-button px-3 py-2 text-xs shrink-0 flex items-center gap-1">
+                        <i class="fa-solid fa-location-arrow"></i> <span>ENGAGE</span>
+                    </button>
+                    <button onclick="app.clearDestination()" id="clear-nav-btn" class="hidden bg-lcars-red text-white px-2.5 py-2 rounded-xl text-xs shrink-0" title="Abort Route">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Map Control Overlay Buttons (Recenter & True North) -->
+                <div class="absolute top-3 right-3 z-[400] flex flex-col gap-2">
+                    <button onclick="app.recenterUnitMap()" class="bg-lcars-panel border border-lcars-gold/60 text-lcars-gold h-10 w-10 rounded-xl flex items-center justify-center shadow-lg hover:bg-lcars-gold hover:text-black transition-colors" title="Recenter Map">
+                        <i class="fa-solid fa-crosshairs text-sm"></i>
+                    </button>
+                    <button onclick="app.pointTrueNorthUnitMap()" class="bg-lcars-panel border border-lcars-blue/60 text-lcars-blue h-10 w-10 rounded-xl flex items-center justify-center shadow-lg hover:bg-lcars-blue hover:text-black transition-colors" title="Point True North">
+                        <i class="fa-solid fa-compass text-sm"></i>
+                    </button>
+                </div>
+
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[400] lcars-panel px-4 py-2 rounded-2xl border border-lcars-gold/50 pointer-events-none text-center shadow-lg w-[90%] max-w-sm">
+                    <p id="nav-instruction-label" class="text-[9px] font-lcars text-lcars-blue tracking-widest uppercase mb-0.5">NAVIGATION: STANDBY</p>
                     <div class="flex gap-2 items-center justify-center text-xs">
                         <p id="u-coords-display" class="font-lcars text-lcars-gold font-bold truncate">ACQUIRING FIX...</p>
                         <span class="text-gray-600">|</span>
-                        <p id="u-speed-display" class="font-lcars text-lcars-blue font-bold shrink-0">0.0 Warp</p>
+                        <p id="u-speed-display" class="font-lcars text-lcars-blue font-bold shrink-0">0.0 km/h</p>
                     </div>
                 </div>
             </div>
@@ -334,6 +355,17 @@
             <div id="admin-view-dashboard" class="flex-1 flex flex-col lg:flex-row relative overflow-hidden bg-black">
                 <div class="flex-1 h-[55vh] lg:h-full relative border-b lg:border-b-0 lg:border-r border-lcars-blue/20">
                     <div id="admin-map"></div>
+                    
+                    <!-- Admin Map Control Overlay Buttons (Recenter & True North) -->
+                    <div class="absolute top-3 right-3 z-[400] flex flex-col gap-2">
+                        <button onclick="app.recenterAdminMap()" class="bg-lcars-panel border border-lcars-blue/60 text-lcars-blue h-10 w-10 rounded-xl flex items-center justify-center shadow-lg hover:bg-lcars-blue hover:text-black transition-colors" title="Recenter Command View">
+                            <i class="fa-solid fa-crosshairs text-sm"></i>
+                        </button>
+                        <button onclick="app.pointTrueNorthAdminMap()" class="bg-lcars-panel border border-lcars-gold/60 text-lcars-gold h-10 w-10 rounded-xl flex items-center justify-center shadow-lg hover:bg-lcars-gold hover:text-black transition-colors" title="Point True North">
+                            <i class="fa-solid fa-compass text-sm"></i>
+                        </button>
+                    </div>
+
                     <div class="absolute top-3 left-3 z-[400] lcars-panel px-3 py-2 rounded-2xl border border-lcars-blue/30 pointer-events-none shadow-lg">
                         <p class="text-[9px] font-lcars text-lcars-purple tracking-widest uppercase">Active Vessels</p>
                         <div class="flex items-baseline gap-1.5">
@@ -550,6 +582,7 @@
             adminPasswordHash: 'admin123',
             allMessages: [], unitChatTab: 'private', adminChatTarget: 'group', unitsList: {}, 
             mediaRecorder: null, audioChunks: [], isRecording: false, activeEmergencyUnit: null,
+            latestCoords: null, destCoords: null, destMarker: null, routeLine: null,
 
             showUnitSetup: () => showScreen('unit-setup-screen'),
             showAdminLogin: () => showScreen('admin-login-screen'),
@@ -564,21 +597,20 @@
                     err.innerText = "ACCESS DENIED: MISSING CREDENTIALS"; err.classList.remove('hidden'); return;
                 }
 
-                let existingUnit = null;
-                let existingId = null;
+                let existingUnitId = null;
                 for (const [id, unit] of Object.entries(app.unitsList)) {
-                    if (unit.name.toUpperCase() === nameInput) { existingUnit = unit; existingId = id; break; }
-                }
-
-                if (existingUnit) {
-                    if (existingUnit.pin && existingUnit.pin !== pinInput) {
-                        err.innerText = "ACCESS DENIED: INVALID SECURITY CODE"; err.classList.remove('hidden'); return;
+                    if (unit.name.toUpperCase() === nameInput) {
+                        if (unit.pin && unit.pin !== pinInput) {
+                            err.innerText = "ACCESS DENIED: INVALID SECURITY CODE"; err.classList.remove('hidden'); return;
+                        }
+                        existingUnitId = id;
+                        break;
                     }
                 }
 
                 app.unitName = nameInput;
                 app.role = 'unit';
-                app.unitDocId = existingId || app.userId;
+                app.unitDocId = existingUnitId || app.userId;
 
                 document.getElementById('unit-name-display').innerText = app.unitName;
                 document.getElementById('logout-btn').classList.remove('hidden');
@@ -634,6 +666,8 @@
                     app.unitMap.remove();
                     app.unitMap = null;
                     app.unitMarker = null;
+                    app.destMarker = null;
+                    app.routeLine = null;
                 }
 
                 app.role = null;
@@ -641,6 +675,8 @@
                 app.unitDocId = null;
                 app.adminChatTarget = 'group';
                 app.unitChatTab = 'private';
+                app.latestCoords = null;
+                app.destCoords = null;
                 
                 document.getElementById('unit-name-input').value = '';
                 document.getElementById('unit-pin-input').value = '';
@@ -717,6 +753,7 @@
                 app.watchId = navigator.geolocation.watchPosition(
                     async (position) => {
                         const { latitude, longitude, speed } = position.coords;
+                        app.latestCoords = [latitude, longitude];
                         updateStatus('SUBSPACE LINKED');
                         
                         document.getElementById('u-coords-display').innerText = `${latitude.toFixed(3)}, ${longitude.toFixed(3)}`;
@@ -756,7 +793,11 @@
 
                             } else {
                                 app.unitMarker.setLatLng([latitude, longitude]);
-                                app.unitMap.setView([latitude, longitude]); 
+                            }
+
+                            // Update live navigation vector if destination is set
+                            if(app.destCoords) {
+                                app.updateNavigationVector();
                             }
                         }
 
@@ -768,6 +809,85 @@
                     (error) => { updateStatus('SUBSPACE LOST', true); },
                     { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
                 );
+            },
+
+            setDestination: async () => {
+                const query = document.getElementById('nav-destination-input').value.trim();
+                if(!query) return showAlert("INPUT ERROR", "Please enter a destination address.");
+
+                updateStatus('SCANNING GPS...');
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+                    const results = await response.json();
+                    
+                    if(!results || results.length === 0) {
+                        updateStatus('SUBSPACE LINKED');
+                        return showAlert("NOT FOUND", "Destination coordinates could not be resolved.");
+                    }
+
+                    const destLat = parseFloat(results[0].lat);
+                    const destLng = parseFloat(results[0].lon);
+                    app.destCoords = [destLat, destLng];
+
+                    const destIconHtml = `
+                        <div class="w-8 h-8 rounded-full bg-lcars-red flex items-center justify-center text-white border-2 border-white shadow-[0_0_10px_#CC3333]">
+                            <i class="fa-solid fa-flag text-xs"></i>
+                        </div>
+                    `;
+                    const dIcon = L.divIcon({ className: 'custom-div-icon', html: destIconHtml, iconSize: [32, 32], iconAnchor: [16, 16] });
+
+                    if(app.destMarker) {
+                        app.destMarker.setLatLng(app.destCoords);
+                    } else {
+                        app.destMarker = L.marker(app.destCoords, {icon: dIcon}).addTo(app.unitMap);
+                    }
+
+                    document.getElementById('clear-nav-btn').classList.remove('hidden');
+                    app.updateNavigationVector();
+                    updateStatus('SUBSPACE LINKED');
+                    showAlert("COURSE LAID IN", `Destination locked: ${results[0].display_name.substring(0, 40)}...`);
+                } catch(e) {
+                    updateStatus('SUBSPACE LINKED');
+                    showAlert("ERROR", "Failed to resolve destination coordinates.");
+                }
+            },
+
+            updateNavigationVector: () => {
+                if(!app.latestCoords || !app.destCoords || !app.unitMap) return;
+
+                if(app.routeLine) {
+                    app.unitMap.removeLayer(app.routeLine);
+                }
+
+                app.routeLine = L.polyline([app.latestCoords, app.destCoords], {
+                    color: '#FF9900',
+                    weight: 4,
+                    dashArray: '6, 8',
+                    opacity: 0.8
+                }).addTo(app.unitMap);
+
+                // Calculate distance in KM
+                const from = L.latLng(app.latestCoords[0], app.latestCoords[1]);
+                const to = L.latLng(app.destCoords[0], app.destCoords[1]);
+                const distanceKm = from.distanceTo(to) / 1000;
+
+                const navLabel = document.getElementById('nav-instruction-label');
+                navLabel.innerHTML = `COURSE: <b class="text-lcars-gold">${distanceKm >= 1 ? distanceKm.toFixed(2) + ' km' : (distanceKm * 1000).toFixed(0) + ' m'}</b> TO TARGET`;
+            },
+
+            clearDestination: () => {
+                app.destCoords = null;
+                if(app.destMarker && app.unitMap) {
+                    app.unitMap.removeLayer(app.destMarker);
+                    app.destMarker = null;
+                }
+                if(app.routeLine && app.unitMap) {
+                    app.unitMap.removeLayer(app.routeLine);
+                    app.routeLine = null;
+                }
+                document.getElementById('nav-destination-input').value = '';
+                document.getElementById('clear-nav-btn').classList.add('hidden');
+                document.getElementById('nav-instruction-label').innerText = 'NAVIGATION: STANDBY';
             },
 
             initMap: () => {
@@ -783,6 +903,40 @@
 
                     app.map.invalidateSize();
                 }, 150);
+            },
+
+            recenterUnitMap: () => {
+                if(app.unitMap && app.latestCoords) {
+                    app.unitMap.setView(app.latestCoords, 16, { animate: true });
+                } else {
+                    showAlert("NOTICE", "Acquiring subspace coordinates...");
+                }
+            },
+
+            pointTrueNorthUnitMap: () => {
+                if(app.unitMap && app.latestCoords) {
+                    app.unitMap.setView(app.unitMap.getCenter(), app.unitMap.getZoom(), { animate: true });
+                    showAlert("TRUE NORTH", "Tactical grid aligned to True North (0°).");
+                }
+            },
+
+            recenterAdminMap: () => {
+                if(app.map) {
+                    const markerKeys = Object.keys(app.markers);
+                    if(markerKeys.length > 0) {
+                        const firstMarker = app.markers[markerKeys[0]];
+                        app.map.setView(firstMarker.getLatLng(), 14, { animate: true });
+                    } else {
+                        app.map.setView([10.3157, 123.8854], 13, { animate: true });
+                    }
+                }
+            },
+
+            pointTrueNorthAdminMap: () => {
+                if(app.map) {
+                    app.map.setView(app.map.getCenter(), app.map.getZoom(), { animate: true });
+                    showAlert("TRUE NORTH", "Command radar aligned to True North (0°).");
+                }
             },
 
             setupAdminTracking: () => {
@@ -1250,7 +1404,13 @@
                 else await setDoc(settingsRef, { password: 'admin123' }, { merge: true });
 
                 onSnapshot(collection(app.db, 'artifacts', app.appId, 'public', 'data', 'units'), (snap) => {
-                    const list = {}; snap.forEach(d => list[d.id] = d.data()); app.unitsList = list;
+                    const list = {}; 
+                    snap.forEach(d => list[d.id] = d.data()); 
+                    app.unitsList = list;
+                    if (app.role === 'admin') {
+                        app.updateAdminDropdown();
+                        app.renderManageUnits();
+                    }
                 });
 
                 setTimeout(() => {
