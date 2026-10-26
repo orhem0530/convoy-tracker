@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Starfleet Fleet Telemetry - LCARS Command</title>
+    <title>MotionGrid - Fleet Telemetry Command</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -132,13 +132,13 @@
     <header class="bg-black border-b-2 border-lcars-orange px-3 py-2 z-10 flex justify-between items-center shrink-0 relative">
         <div class="flex items-center">
             <div class="bg-lcars-gold text-black h-9 px-3 rounded-l-full flex items-center justify-center font-lcars font-bold text-sm mr-2 shrink-0">
-                NCC-1701
+                MG-01
             </div>
             <div>
                 <h1 class="text-sm md:text-lg font-lcars text-lcars-blue font-bold leading-none tracking-widest">
-                    STARFLEET <span class="text-lcars-gold">TELEMETRY</span>
+                    MOTION<span class="text-lcars-gold">GRID</span>
                 </h1>
-                <p class="text-[9px] font-lcars text-lcars-purple tracking-widest">U.S.S. CONVOY GRID</p>
+                <p class="text-[9px] font-lcars text-lcars-purple tracking-widest">“Every Vehicle. Every Movement. One View.”</p>
             </div>
         </div>
         <div class="flex items-center gap-2">
@@ -191,7 +191,7 @@
                         <i class="fa-solid fa-desktop"></i>
                     </div>
                     <div class="text-left font-lcars">
-                        <h3 class="text-base text-lcars-gold font-bold uppercase tracking-wider mb-0.5">Starfleet Command</h3>
+                        <h3 class="text-base text-lcars-gold font-bold uppercase tracking-wider mb-0.5">MotionGrid Command</h3>
                         <p class="text-xs text-gray-400">Monitor Fleet & Tactical Grid</p>
                     </div>
                 </button>
@@ -675,7 +675,7 @@
                     err.innerText = "ACCESS DENIED: INVALID MASTER KEY"; err.classList.remove('hidden'); return;
                 }
                 app.role = 'admin';
-                app.unitName = 'STARFLEET COMMAND';
+                app.unitName = 'MOTIONGRID COMMAND';
                 app.unitDocId = app.userId;
                 document.getElementById('logout-btn').classList.remove('hidden');
                 showScreen('admin-screen');
@@ -745,7 +745,7 @@
                     const myRef = doc(app.db, 'artifacts', app.appId, 'public', 'data', 'units', app.unitDocId);
                     await setDoc(myRef, { sos: true, status: 'breakdown', lastUpdated: serverTimestamp() }, { merge: true });
                     document.getElementById('unit-status-selector').value = 'breakdown';
-                    showAlert("RED ALERT ACTIVE", "Starfleet Command has been signaled with your exact distress coordinates.");
+                    showAlert("RED ALERT ACTIVE", "MotionGrid Command has been signaled with your exact distress coordinates.");
                 } catch(e) {
                     showAlert("ERROR", "Failed to transmit distress signal.");
                 }
@@ -1007,7 +1007,6 @@
                         const data = docSnap.data();
                         updatedUnits[docSnap.id] = data;
 
-                        // Analytics stats calculation
                         if(data.status === 'in_transit') transitCount++;
                         else if(data.status === 'pit_stop') dockedCount++;
                         if(data.sos || data.status === 'breakdown') sosCount++;
@@ -1076,7 +1075,6 @@
                     app.renderManageUnits();
                     document.getElementById('active-units-count').innerText = activeCount;
 
-                    // Update Analytics Dash Stats
                     const totalEntries = Object.keys(updatedUnits).length;
                     document.getElementById('analytics-total-vessels').innerText = totalEntries;
                     document.getElementById('analytics-active-transit').innerText = transitCount;
@@ -1422,7 +1420,7 @@
                     let chatType = (role === 'admin' ? app.adminChatTarget : app.unitChatTab) === 'group' ? 'group' : 'private';
                     let target = role === 'admin' ? (app.adminChatTarget === 'group' ? null : app.adminChatTarget) : (app.unitChatTab === 'group' ? null : app.unitDocId);
                     
-                    let fallbackText = type === 'audio' ? '🎤 Subspace Voice Log' : (type === 'video' ? '📹 Visual Feed' : '🖼️ Graphic Scan');
+                    let fallbackText = type === 'audio' ? '🎤 Voice Log' : (type === 'video' ? '📹 Visual Feed' : '🖼️ Graphic Scan');
 
                     await addDoc(messagesRef, {
                         senderId: role === 'admin' ? app.userId : app.unitDocId, senderName: app.unitName, text: fallbackText, 
@@ -1450,7 +1448,7 @@
 
         const init = async () => {
             try {
-                app.appId = typeof __app_id !== 'undefined' ? __app_id : 'convoy-tracker-pro';
+                app.appId = typeof __app_id !== 'undefined' ? __app_id : 'motiongrid-tracker';
                 const firebaseConfig = {
                   apiKey: "AIzaSyCq2ns7RrHuW05e2L3wavFnrzUIHZ4bl74",
                   authDomain: "ccpv-amazing-race.firebaseapp.com",
