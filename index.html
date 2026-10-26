@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fleet Convoy Tracker - Command Pro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        convoy: {
+                            amber: '#FFB800',
+                            cyan: '#00F0FF',
+                            crimson: '#FF0033',
+                            dark: '#0B0D10',
+                            panel: '#151921',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        sport: ['Impact', 'Arial Black', 'sans-serif'],
+                        tech: ['Rajdhani', 'monospace']
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-up': 'slideUp 0.3s ease-out forwards',
+                    },
+                    keyframes: {
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Rajdhani:wght@500;700&display=swap');
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0B0D10; 
+            color: white; 
+            overflow: hidden; 
+        }
+        
+        .bg-stripes {
+            background-image: repeating-linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.015),
+                rgba(255, 255, 255, 0.015) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+        }
+
+        .font-sport { font-family: 'Impact', 'Arial Black', sans-serif; letter-spacing: 1.5px; }
+        .font-tech { font-family: 'Rajdhani', monospace; letter-spacing: 0.5px; }
+        
+        .glass-panel { 
+            background: rgba(21, 25, 33, 0.85); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06); 
+        }
+        
+        .glow-amber { box-shadow: 0 0 15px rgba(255, 184, 0, 0.3), inset 0 0 10px rgba(255, 184, 0, 0.1); border-color: #FFB800; }
+        .glow-cyan { box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 10px rgba(0, 240, 255, 0.1); border-color: #00F0FF; }
+        .glow-crimson { box-shadow: 0 0 15px rgba(255, 0, 51, 0.3), inset 0 0 10px rgba(255, 0, 51, 0.1); border-color: #FF0033; }
+
+        .cut-corner { clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); }
+        .cut-corner-sm { clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
+        .skewed-btn { transform: skewX(-15deg); }
+        .skewed-btn > * { transform: skewX(15deg); display: inline-block; }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: #FFB800; border-radius: 2px; }
+
+        #admin-map, #unit-map { height: 100%; width: 100%; z-index: 1; background: #0B0D10;}
+        
+        .leaflet-popup-content-wrapper { background: #151921; color: white; border: 1px solid #FFB800; border-radius: 0; box-shadow: 0 0 15px rgba(255, 184, 0, 0.3); }
+        .leaflet-popup-tip { background: #151921; border: 1px solid #FFB800; }
+        .custom-div-icon { background: transparent; border: none; }
+        
+        /* Note: CartoDB Dark Matter tiles are naturally dark, so we don't invert them */
+
+        .hex-loader {
+            width: 50px; height: 50px;
+            background: conic-gradient(from 0deg, transparent 0%, #FFB800 20%, transparent 40%);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col relative bg-convoy-dark bg-stripes">
+
+    <!-- Header -->
+    <header class="bg-black/95 border-b-2 border-convoy-amber p-3 z-10 flex justify-between items-center shrink-0 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-convoy-amber/10 to-transparent"></div>
+        <div class="flex items-center relative z-10">
+            <div class="bg-convoy-amber text-black h-10 w-10 flex items-center justify-center cut-corner-sm mr-3 font-bold">
+                <i class="fa-solid fa-truck-fast text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-sport text-white uppercase italic leading-tight">
+                    CONVOY <span class="text-convoy-amber">TRACKER</span> HQ
+                </h1>
+                <p class="text-[10px] font-tech tracking-widest text-convoy-cyan uppercase hidden md:block">Real-Time Fleet Telemetry & Dispatch</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 relative z-10">
+            <div id="status-indicator" class="font-tech font-bold text-gray-500 bg-convoy-panel border border-gray-800 px-3 py-1 cut-corner-sm flex items-center shadow-lg">
+                <i class="fa-solid fa-circle text-[8px] mr-2"></i> <span>OFFLINE</span>
+            </div>
+            <button id="logout-btn" onclick="app.logout()" class="hidden bg-convoy-panel border border-gray-800 hover:border-convoy-crimson text-gray-500 hover:text-convoy-crimson px-3 py-1 cut-corner-sm flex items-center shadow-lg transition-colors" title="Disconnect & Logout">
+                <i class="fa-solid fa-power-off"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Emergency Beacon Banner -->
+    <div id="hq-emergency-banner" class="hidden bg-red-600 text-white px-4 py-2 font-sport text-center uppercase tracking-widest z-50 flex items-center justify-center gap-4 animate-pulse">
+        <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+        <span id="emergency-banner-text">EMERGENCY ASSISTANCE REQUESTED FROM UNIT</span>
+        <button onclick="app.dismissEmergency()" class="bg-black text-red-500 px-3 py-1 text-xs font-tech cut-corner-sm hover:bg-white transition-colors">ACKNOWLEDGE & CLEAR</button>
+    </div>
+
+    <main class="flex-1 relative overflow-hidden flex flex-col">
+        
+        <!-- Loader -->
+        <div id="loading-screen" class="absolute inset-0 bg-convoy-dark z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
+            <div class="hex-loader mb-6 relative">
+                <div class="absolute inset-2 bg-convoy-dark rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-satellite-dish text-convoy-amber text-sm"></i>
+                </div>
+            </div>
+            <p class="text-convoy-cyan font-tech tracking-[0.2em] animate-pulse">INITIALIZING SATELLITE LINK...</p>
+        </div>
+
+        <!-- Role Select -->
+        <div id="role-screen" class="hidden h-full w-full flex flex-col items-center justify-center p-4 relative z-10">
+            <div class="w-full max-w-4xl grid md:grid-cols-2 gap-6 p-4">
+                <button onclick="app.showUnitSetup()" class="group relative bg-convoy-panel border border-gray-800 p-8 cut-corner transition-all hover:border-convoy-amber hover:glow-amber overflow-hidden flex flex-col items-center justify-center min-h-[300px]">
+                    <div class="absolute inset-0 bg-convoy-amber/5 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    <div class="h-20 w-20 rounded-full border-2 border-convoy-amber text-convoy-amber flex items-center justify-center text-4xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-truck"></i>
+                    </div>
+                    <h2 class="text-3xl font-sport text-white uppercase italic">Vehicle Unit</h2>
+                    <p class="text-gray-400 font-tech mt-2">Broadcast GPS & Fleet Comms</p>
+                </button>
+
+                <button onclick="app.showAdminLogin()" class="group relative bg-convoy-panel border border-gray-800 p-8 cut-corner transition-all hover:border-convoy-cyan hover:glow-cyan overflow-hidden flex flex-col items-center justify-center min-h-[300px]">
+                    <div class="absolute inset-0 bg-convoy-cyan/5 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    <div class="h-20 w-20 rounded-full border-2 border-convoy-cyan text-convoy-cyan flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-desktop"></i>
+                    </div>
+                    <h2 class="text-3xl font-sport text-white uppercase italic">Command Center</h2>
+                    <p class="text-gray-400 font-tech mt-2">Monitor Fleet & Manage Dispatch</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Unit Login -->
+        <div id="unit-setup-screen" class="hidden h-full w-full flex flex-col items-center justify-center p-6 z-10 relative">
+            <div class="glass-panel p-8 cut-corner max-w-md w-full text-center space-y-6 glow-amber">
+                <div class="flex justify-between items-center mb-2">
+                    <button onclick="app.showRoleScreen()" class="text-gray-400 hover:text-convoy-amber transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h2 class="text-2xl font-sport text-white uppercase italic">FLEET UNIT LOGIN</h2>
+                    <div class="w-4"></div>
+                </div>
+                <div class="text-left space-y-4">
+                    <div>
+                        <label class="block text-xs font-tech text-convoy-amber mb-1 tracking-wider uppercase">Unit Callsign / Name</label>
+                        <input type="text" id="unit-name-input" class="w-full bg-black border border-gray-700 cut-corner-sm px-4 py-3 text-white focus:outline-none focus:border-convoy-amber focus:glow-amber transition-all font-tech text-lg uppercase" placeholder="e.g. ALPHA-1">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-tech text-convoy-amber mb-1 tracking-wider uppercase">Security PIN</label>
+                        <input type="password" id="unit-pin-input" class="w-full bg-black border border-gray-700 cut-corner-sm px-4 py-3 text-white focus:outline-none focus:border-convoy-amber focus:glow-amber transition-all font-tech text-lg" placeholder="••••">
+                    </div>
+                </div>
+                <button onclick="app.joinAsUnit()" class="w-full bg-convoy-amber text-black font-sport text-xl py-3 skewed-btn hover:bg-white transition-colors mt-6 shadow-[0_0_15px_rgba(255,184,0,0.4)]">
+                    <span>START BROADCASTING <i class="fa-solid fa-play ml-2 text-sm"></i></span>
+                </button>
+                <p id="setup-error" class="text-convoy-crimson text-sm font-tech bg-convoy-crimson/10 border border-convoy-crimson/30 p-2 cut-corner-sm hidden animate-pulse"></p>
+            </div>
+        </div>
+
+        <!-- Admin Login -->
+        <div id="admin-login-screen" class="hidden h-full w-full flex flex-col items-center justify-center p-6 z-10 relative">
+            <div class="glass-panel p-8 cut-corner max-w-md w-full text-center space-y-6 glow-cyan">
+                <div class="flex justify-between items-center mb-2">
+                    <button onclick="app.showRoleScreen()" class="text-gray-400 hover:text-convoy-cyan transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h2 class="text-2xl font-sport text-white uppercase italic">HQ OVERRIDE LOGIN</h2>
+                    <div class="w-4"></div>
+                </div>
+                <div class="text-left">
+                    <label class="block text-xs font-tech text-convoy-cyan mb-1 tracking-wider uppercase">HQ Master Password</label>
+                    <input type="password" id="admin-password-input" class="w-full bg-black border border-gray-700 cut-corner-sm px-4 py-3 text-white focus:outline-none focus:border-convoy-cyan focus:glow-cyan transition-all font-tech text-lg" placeholder="••••••••">
+                </div>
+                <button onclick="app.joinAsAdmin()" class="w-full bg-convoy-cyan text-black font-sport text-xl py-3 skewed-btn hover:bg-white transition-colors mt-6 shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+                    <span>ACCESS COMMAND <i class="fa-solid fa-unlock ml-2 text-sm"></i></span>
+                </button>
+                <p id="admin-login-error" class="text-convoy-crimson text-sm font-tech bg-convoy-crimson/10 border border-convoy-crimson/30 p-2 cut-corner-sm hidden animate-pulse"></p>
+            </div>
+        </div>
+
+        <!-- Unit Dashboard -->
+        <div id="unit-screen" class="hidden h-full w-full flex flex-col relative z-10">
+            <!-- Info Bar -->
+            <div class="bg-black border-b border-gray-800 p-4 shrink-0 flex items-center justify-between relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-convoy-amber/5 to-transparent"></div>
+                <div class="flex items-center gap-4 relative z-10">
+                    <div id="unit-avatar-display" class="h-14 w-14 cut-corner-sm bg-convoy-amber text-black flex items-center justify-center font-sport text-2xl overflow-hidden border border-white glow-amber"></div>
+                    <div>
+                        <h3 id="unit-name-display" class="font-sport text-2xl text-white uppercase italic leading-none">UNIT</h3>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="relative flex h-3 w-3">
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-convoy-amber opacity-75"></span>
+                              <span class="relative inline-flex rounded-full h-3 w-3 bg-convoy-amber"></span>
+                            </span>
+                            <p id="unit-status-label" class="text-xs font-tech text-convoy-amber tracking-widest uppercase">GPS BROADCASTING</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 relative z-10">
+                    <select id="unit-status-selector" onchange="app.updateMyUnitStatus(this.value)" class="bg-convoy-panel text-convoy-amber border border-gray-700 font-tech text-xs cut-corner-sm px-3 py-2 uppercase focus:outline-none">
+                        <option value="in_transit">🟢 IN TRANSIT</option>
+                        <option value="pit_stop">🟡 PIT STOP</option>
+                        <option value="delayed">🟠 DELAYED</option>
+                        <option value="breakdown">🔴 BREAKDOWN</option>
+                    </select>
+                    <button onclick="app.triggerSOS()" class="bg-red-600 hover:bg-red-500 text-white font-sport px-4 py-2 cut-corner-sm border-2 border-white shadow-[0_0_15px_rgba(255,0,0,0.6)] animate-pulse flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                        <span class="text-sm tracking-wider uppercase hidden sm:inline">SOS</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Unit Main Tabs -->
+            <div class="flex bg-black shrink-0 font-tech tracking-wider uppercase text-sm border-b border-gray-800 relative z-20 shadow-lg">
+                <button onclick="app.switchUnitMainTab('map')" id="u-main-tab-map" class="flex-1 py-3 border-b-2 border-convoy-amber text-convoy-amber bg-convoy-amber/10 transition-colors">
+                    <i class="fa-solid fa-map-location-dot mr-2"></i>Live Convoy Map
+                </button>
+                <button onclick="app.switchUnitMainTab('comms')" id="u-main-tab-comms" class="flex-1 py-3 border-b-2 border-transparent text-gray-500 hover:text-white transition-colors">
+                    <i class="fa-solid fa-walkie-talkie mr-2"></i>Fleet Comms
+                </button>
+            </div>
+            
+            <!-- Unit MAP View -->
+            <div id="unit-view-map" class="flex-1 relative flex flex-col bg-convoy-panel">
+                <div id="unit-map" class="h-full w-full"></div>
+                <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-[400] glass-panel px-6 py-2 cut-corner-sm border border-convoy-amber/50 pointer-events-none text-center shadow-[0_0_15px_rgba(255,184,0,0.2)]">
+                    <p class="text-[10px] font-tech text-gray-400 tracking-widest uppercase mb-1">Live Telemetry & Speed</p>
+                    <div class="flex gap-4 items-center justify-center">
+                        <p id="u-coords-display" class="text-sm font-tech text-convoy-amber font-bold">GPS: ACQUIRING...</p>
+                        <span class="text-gray-600">|</span>
+                        <p id="u-speed-display" class="text-sm font-tech text-convoy-cyan font-bold">0.0 km/h</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unit COMMS View -->
+            <div id="unit-view-comms" class="hidden flex-1 flex-col bg-convoy-panel relative border-t-4 border-black">
+                <div class="flex bg-black shrink-0 font-tech tracking-wider uppercase text-xs">
+                    <button onclick="app.switchUnitChatTab('private')" id="u-chat-tab-private" class="flex-1 py-2 border-b border-convoy-cyan text-convoy-cyan transition-colors bg-convoy-cyan/5"><i class="fa-solid fa-headset mr-2"></i>Direct to HQ</button>
+                    <button onclick="app.switchUnitChatTab('group')" id="u-chat-tab-group" class="flex-1 py-2 border-b border-transparent text-gray-500 hover:text-white transition-colors"><i class="fa-solid fa-truck-ramp-box mr-2"></i>All Units Channel</button>
+                </div>
+
+                <div id="unit-chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"></div>
+                
+                <form id="unit-chat-form" class="p-3 bg-black border-t border-gray-800 flex gap-2 shrink-0 items-center">
+                    <button type="button" onclick="document.getElementById('unit-file-upload').click()" class="bg-convoy-panel text-gray-400 hover:text-white h-12 w-12 cut-corner-sm flex items-center justify-center transition-colors border border-gray-700">
+                        <i class="fa-solid fa-paperclip"></i>
+                    </button>
+                    <button type="button" id="unit-mic-btn" onclick="app.toggleRecording('unit')" class="bg-convoy-panel text-convoy-amber hover:bg-convoy-amber hover:text-black h-12 w-12 cut-corner-sm flex items-center justify-center transition-colors border border-gray-700">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+                    <input type="text" id="unit-message-input" autocomplete="off" placeholder="TRANSMIT STATUS..." class="flex-1 bg-convoy-panel border border-gray-700 cut-corner-sm px-4 py-3 text-white font-tech focus:outline-none focus:border-convoy-amber focus:glow-amber transition-all">
+                    <button type="submit" class="bg-convoy-amber text-black h-12 w-16 cut-corner-sm flex items-center justify-center hover:bg-white transition-colors">
+                        <i class="fa-solid fa-paper-plane text-xl"></i>
+                    </button>
+                    <input type="file" id="unit-file-upload" accept="video/*, image/*" class="hidden" onchange="app.handleFileUpload(event, 'unit')">
+                </form>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="admin-screen" class="hidden h-full w-full flex flex-col z-10">
+            <div class="bg-black flex border-b border-convoy-cyan/30 shrink-0 overflow-x-auto font-tech tracking-widest uppercase text-sm">
+                <button onclick="app.switchAdminTab('dashboard')" id="admin-tab-dashboard" class="flex-1 py-3 px-4 border-b-2 border-convoy-cyan text-convoy-cyan bg-convoy-cyan/10 whitespace-nowrap transition-colors"><i class="fa-solid fa-map mr-2"></i>Fleet Radar</button>
+                <button onclick="app.switchAdminTab('manage')" id="admin-tab-manage" class="flex-1 py-3 px-4 border-b-2 border-transparent text-gray-500 hover:text-white whitespace-nowrap transition-colors"><i class="fa-solid fa-truck-front mr-2"></i>Unit Roster</button>
+                <button onclick="app.switchAdminTab('settings')" id="admin-tab-settings" class="flex-1 py-3 px-4 border-b-2 border-transparent text-gray-500 hover:text-white whitespace-nowrap transition-colors"><i class="fa-solid fa-shield-halved mr-2"></i>Security</button>
+            </div>
+
+            <!-- Tab 1: Live Dashboard -->
+            <div id="admin-view-dashboard" class="flex-1 flex flex-col lg:flex-row relative overflow-hidden bg-convoy-panel">
+                <div class="flex-1 h-[50vh] lg:h-full relative glow-cyan border-r border-convoy-cyan/20">
+                    <div id="admin-map" class="h-full w-full"></div>
+                    <div class="absolute top-4 left-4 z-[400] glass-panel px-4 py-3 cut-corner-sm border border-convoy-amber/30 pointer-events-none">
+                        <p class="text-[10px] font-tech text-gray-400 tracking-widest uppercase">Active Fleet Units</p>
+                        <div class="flex items-baseline gap-2">
+                            <p id="active-units-count" class="text-3xl font-sport text-convoy-amber">0</p>
+                            <span class="relative flex h-2 w-2">
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-convoy-amber opacity-75"></span>
+                              <span class="relative inline-flex rounded-full h-2 w-2 bg-convoy-amber"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full lg:w-[400px] h-[50vh] lg:h-full flex flex-col shrink-0 bg-black">
+                    <div class="p-4 border-b border-gray-800 shrink-0 bg-convoy-panel relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-r from-convoy-cyan/10 to-transparent"></div>
+                        <h3 class="font-sport text-white text-lg uppercase italic mb-3 relative z-10"><i class="fa-solid fa-tower-broadcast text-convoy-cyan mr-2"></i>HQ Dispatch Comms</h3>
+                        <select id="admin-chat-select" onchange="app.switchAdminChat(this.value)" class="relative z-10 bg-black text-convoy-amber font-tech tracking-wider text-sm cut-corner-sm px-3 py-2 border border-gray-700 focus:outline-none focus:border-convoy-cyan w-full appearance-none">
+                            <option value="group">📢 ALL UNITS CONVOY BROADCAST</option>
+                        </select>
+                    </div>
+                    
+                    <div id="admin-chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"></div>
+                    
+                    <form id="admin-chat-form" class="p-3 bg-convoy-panel border-t border-gray-800 flex gap-2 shrink-0 items-center">
+                        <button type="button" onclick="document.getElementById('admin-file-upload').click()" class="bg-black text-gray-400 hover:text-white h-10 w-10 cut-corner-sm flex items-center justify-center transition-colors border border-gray-700">
+                            <i class="fa-solid fa-paperclip"></i>
+                        </button>
+                        <button type="button" id="admin-mic-btn" onclick="app.toggleRecording('admin')" class="bg-black text-convoy-cyan hover:bg-convoy-cyan hover:text-black h-10 w-10 cut-corner-sm flex items-center justify-center transition-colors border border-gray-700">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
+                        <input type="text" id="admin-message-input" autocomplete="off" placeholder="TRANSMIT DISPATCH..." class="flex-1 bg-black border border-gray-700 cut-corner-sm px-4 py-2 text-white font-tech focus:outline-none focus:border-convoy-cyan focus:glow-cyan transition-all">
+                        <button type="submit" class="bg-convoy-cyan text-black h-10 w-12 cut-corner-sm flex items-center justify-center hover:bg-white transition-colors">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                        <input type="file" id="admin-file-upload" accept="video/*, image/*" class="hidden" onchange="app.handleFileUpload(event, 'admin')">
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tab 2: Manage Units -->
+            <div id="admin-view-manage" class="hidden flex-1 overflow-y-auto p-6 space-y-8 bg-convoy-dark relative">
+                <div class="glass-panel p-6 cut-corner border border-convoy-cyan/30 relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 text-convoy-cyan/5 text-9xl font-sport italic pointer-events-none">FLEET</div>
+                    <h3 class="text-2xl font-sport text-white mb-4 uppercase italic relative z-10"><i class="fa-solid fa-plus text-convoy-cyan mr-2"></i>Register New Convoy Unit</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10 font-tech">
+                        <div>
+                            <label class="block text-[10px] text-gray-400 mb-1 tracking-widest uppercase">Unit Callsign *</label>
+                            <input type="text" id="add-unit-name" placeholder="e.g. SUPPORT-2" class="w-full bg-black border border-gray-700 cut-corner-sm px-3 py-2 text-white uppercase focus:outline-none focus:border-convoy-cyan focus:glow-cyan">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-gray-400 mb-1 tracking-widest uppercase">Access PIN *</label>
+                            <input type="text" id="add-unit-pin" placeholder="e.g. 1234" class="w-full bg-black border border-gray-700 cut-corner-sm px-3 py-2 text-white focus:outline-none focus:border-convoy-cyan focus:glow-cyan">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-gray-400 mb-1 tracking-widest uppercase">Vehicle Photo / Emblem</label>
+                            <input type="file" id="add-unit-photo" accept="image/*" class="w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:border-0 file:bg-convoy-cyan file:text-black file:font-bold file:cut-corner-sm hover:file:bg-white cursor-pointer">
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end relative z-10">
+                        <button onclick="app.createNewUnitManual()" class="bg-convoy-cyan text-black font-sport px-8 py-2 skewed-btn hover:bg-white transition-all text-lg shadow-[0_0_10px_rgba(0,240,255,0.3)]">
+                            <span>ENROLL UNIT <i class="fa-solid fa-check ml-1"></i></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-2">
+                        <h3 class="text-xl font-sport text-gray-300 uppercase italic"><i class="fa-solid fa-truck-fast mr-2 text-convoy-amber"></i>Registered Fleet Units</h3>
+                        <span id="registered-units-count" class="text-xs font-tech tracking-widest bg-black px-3 py-1 cut-corner-sm text-convoy-amber border border-gray-700">0 UNITS</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="manage-units-grid"></div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Security Settings -->
+            <div id="admin-view-settings" class="hidden flex-1 overflow-y-auto p-6 relative flex justify-center items-start bg-convoy-dark">
+                <div class="glass-panel p-8 cut-corner max-w-md w-full my-auto border border-convoy-cyan/30 glow-cyan">
+                    <h2 class="text-2xl font-sport text-white mb-6 uppercase italic"><i class="fa-solid fa-shield-halved text-convoy-cyan mr-2"></i>HQ Security</h2>
+                    <div class="space-y-4 font-tech">
+                        <div>
+                            <label class="block text-[10px] text-gray-400 mb-1 tracking-widest uppercase">New Master Password</label>
+                            <input type="password" id="new-password" class="w-full bg-black border border-gray-700 cut-corner-sm px-4 py-2 text-white focus:outline-none focus:border-convoy-cyan">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-gray-400 mb-1 tracking-widest uppercase">Confirm Password</label>
+                            <input type="password" id="confirm-password" class="w-full bg-black border border-gray-700 cut-corner-sm px-4 py-2 text-white focus:outline-none focus:border-convoy-cyan">
+                        </div>
+                        <button onclick="app.updateAdminPassword()" class="w-full bg-convoy-cyan text-black font-sport text-xl py-3 skewed-btn hover:bg-white transition-colors mt-6 shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+                            <span>UPDATE OVERRIDE KEY</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Modals -->
+        <div id="custom-alert" class="hidden fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-convoy-panel p-6 cut-corner max-w-sm w-full text-center border-2 border-convoy-amber glow-amber animate-slide-up">
+                <h3 class="text-2xl font-sport text-white uppercase italic mb-2" id="alert-title">DISPATCH NOTICE</h3>
+                <p class="text-gray-300 font-tech mb-6 text-sm tracking-wide" id="alert-message">Message</p>
+                <button onclick="document.getElementById('custom-alert').classList.add('hidden')" class="bg-convoy-amber text-black font-sport text-lg py-2 px-8 skewed-btn w-full hover:bg-white">
+                    <span>ACKNOWLEDGE</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="edit-unit-modal" class="hidden fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-convoy-panel p-6 cut-corner max-w-md w-full border-2 border-convoy-cyan glow-cyan relative animate-slide-up">
+                <button onclick="document.getElementById('edit-unit-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <h3 class="text-2xl font-sport text-white uppercase italic mb-6 border-b border-gray-700 pb-2"><i class="fa-solid fa-pen-to-square text-convoy-cyan mr-2"></i>Modify Unit Roster</h3>
+                <input type="hidden" id="edit-unit-id">
+                
+                <div class="space-y-4 font-tech">
+                    <div class="flex items-center gap-4 bg-black p-3 cut-corner-sm border border-gray-800">
+                        <div id="edit-unit-photo-preview" class="h-16 w-16 bg-gray-800 border border-convoy-cyan cut-corner-sm flex items-center justify-center overflow-hidden font-sport text-xl text-white"></div>
+                        <div class="flex-1">
+                            <label class="block text-[10px] text-gray-400 mb-1 tracking-widest uppercase">Update Emblem / Photo</label>
+                            <input type="file" id="edit-unit-photo" accept="image/*" class="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:border-0 file:bg-gray-700 file:text-white hover:file:bg-convoy-cyan hover:file:text-black file:cut-corner-sm cursor-pointer">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-400 mb-1 tracking-widest uppercase">Unit Callsign</label>
+                        <input type="text" id="edit-unit-name" class="w-full bg-black border border-gray-700 cut-corner-sm px-3 py-2 text-white uppercase focus:outline-none focus:border-convoy-cyan">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-400 mb-1 tracking-widest uppercase">Access PIN</label>
+                        <input type="text" id="edit-unit-pin" class="w-full bg-black border border-gray-700 cut-corner-sm px-3 py-2 text-white focus:outline-none focus:border-convoy-cyan">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-400 mb-1 tracking-widest uppercase">Fleet Status</label>
+                        <select id="edit-unit-status" class="w-full bg-black border border-gray-700 cut-corner-sm px-3 py-2 text-white uppercase focus:outline-none focus:border-convoy-cyan appearance-none">
+                            <option value="in_transit">IN TRANSIT</option>
+                            <option value="pit_stop">PIT STOP</option>
+                            <option value="delayed">DELAYED</option>
+                            <option value="breakdown">BREAKDOWN</option>
+                        </select>
+                    </div>
+                    <div class="pt-4 flex gap-3">
+                        <button onclick="app.deleteUnit()" class="bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white font-sport py-2 px-4 cut-corner-sm transition-colors text-sm">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                        <button onclick="app.saveUnitEdit()" class="flex-1 bg-convoy-cyan text-black font-sport text-lg py-2 skewed-btn hover:bg-white transition-colors">
+                            <span>APPLY CHANGES</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Firebase Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, deleteDoc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+        const showAlert = (title, message) => {
+            document.getElementById('alert-title').innerText = title;
+            document.getElementById('alert-message').innerText = message;
+            document.getElementById('custom-alert').classList.remove('hidden');
+        };
+
+        const updateStatus = (text, isError = false) => {
+            const ind = document.getElementById('status-indicator');
+            const color = isError ? 'text-convoy-crimson' : 'text-convoy-amber';
+            ind.innerHTML = `<i class="fa-solid fa-circle text-[8px] mr-2 ${color} ${!isError ? 'animate-pulse' : ''}"></i> <span class="${color}">${text}</span>`;
+            ind.className = `font-tech font-bold bg-convoy-panel border px-3 py-1 cut-corner-sm flex items-center shadow-lg relative z-10 ${isError ? 'border-convoy-crimson' : 'border-convoy-amber'}`;
+        };
+
+        const showScreen = (screenId) => {
+            ['loading-screen', 'role-screen', 'unit-setup-screen', 'admin-login-screen', 'unit-screen', 'admin-screen'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+        };
+
+        const getInitials = (name) => {
+            if(!name) return '??';
+            const parts = name.trim().split(' ');
+            if(parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+            return name.substring(0, 2).toUpperCase();
+        };
+
+        const processImageFile = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 150;
+                        const scaleSize = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    };
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        };
+
+        window.app = {
+            db: null, auth: null, storage: null, userId: null, role: null, unitName: null, appId: null, unitDocId: null,
+            map: null, markers: {}, watchId: null, 
+            unitMap: null, unitMarker: null, unitMainTab: 'map',
+            adminPasswordHash: 'admin123',
+            allMessages: [], unitChatTab: 'private', adminChatTarget: 'group', unitsList: {}, 
+            mediaRecorder: null, audioChunks: [], isRecording: false, activeEmergencyUnit: null,
+
+            showUnitSetup: () => showScreen('unit-setup-screen'),
+            showAdminLogin: () => showScreen('admin-login-screen'),
+            showRoleScreen: () => showScreen('role-screen'),
+            
+            joinAsUnit: async () => {
+                const nameInput = document.getElementById('unit-name-input').value.trim().toUpperCase();
+                const pinInput = document.getElementById('unit-pin-input').value.trim();
+                const err = document.getElementById('setup-error');
+                
+                if (!nameInput || !pinInput) {
+                    err.innerText = "ACCESS DENIED: MISSING CREDENTIALS"; err.classList.remove('hidden'); return;
+                }
+
+                let existingUnit = null;
+                let existingId = null;
+                for (const [id, unit] of Object.entries(app.unitsList)) {
+                    if (unit.name.toUpperCase() === nameInput) { existingUnit = unit; existingId = id; break; }
+                }
+
+                if (existingUnit) {
+                    if (existingUnit.pin && existingUnit.pin !== pinInput) {
+                        err.innerText = "ACCESS DENIED: INVALID PIN"; err.classList.remove('hidden'); return;
+                    }
+                }
+
+                app.unitName = nameInput;
+                app.role = 'unit';
+                app.unitDocId = existingId || app.userId;
+
+                document.getElementById('unit-name-display').innerText = app.unitName;
+                document.getElementById('logout-btn').classList.remove('hidden');
+                
+                const myRef = doc(app.db, 'artifacts', app.appId, 'public', 'data', 'units', app.unitDocId);
+                await setDoc(myRef, {
+                    name: app.unitName, pin: pinInput, status: 'in_transit', sos: false, lastUpdated: serverTimestamp()
+                }, { merge: true });
+
+                showScreen('unit-screen');
+                app.switchUnitMainTab('map');
+                app.startTracking();
+                app.setupChat();
+                app.switchUnitChatTab('private');
+            },
+
+            joinAsAdmin: () => {
+                const pwd = document.getElementById('admin-password-input').value;
+                if (pwd !== app.adminPasswordHash) {
+                    const err = document.getElementById('admin-login-error');
+                    err.innerText = "ACCESS DENIED: INVALID KEY"; err.classList.remove('hidden'); return;
+                }
+                app.role = 'admin';
+                app.unitName = 'HQ COMMAND';
+                app.unitDocId = app.userId;
+                document.getElementById('logout-btn').classList.remove('hidden');
+                showScreen('admin-screen');
+                app.initMap();
+                app.setupAdminTracking();
+                app.setupChat();
+                setTimeout(() => app.map.invalidateSize(), 500);
+            },
+
+            logout: async () => {
+                if (app.role === 'unit' && app.unitDocId) {
+                    try {
+                        const myRef = doc(app.db, 'artifacts', app.appId, 'public', 'data', 'units', app.unitDocId);
+                        await setDoc(myRef, { sos: false }, { merge: true });
+                    } catch(e) {}
+                }
+
+                if (app.watchId !== null) {
+                    navigator.geolocation.clearWatch(app.watchId);
+                    app.watchId = null;
+                }
+                
+                if (app.unitMap) {
+                    app.unitMap.remove();
+                    app.unitMap = null;
+                    app.unitMarker = null;
+                }
+
+                app.role = null;
+                app.unitName = null;
+                app.unitDocId = null;
+                app.adminChatTarget = 'group';
+                app.unitChatTab = 'private';
+                
+                document.getElementById('unit-name-input').value = '';
+                document.getElementById('unit-pin-input').value = '';
+                document.getElementById('admin-password-input').value = '';
+                document.getElementById('setup-error').classList.add('hidden');
+                document.getElementById('admin-login-error').classList.add('hidden');
+                
+                document.getElementById('logout-btn').classList.add('hidden');
+                updateStatus('SYSTEM ONLINE');
+                showScreen('role-screen');
+            },
+
+            updateMyUnitStatus: async (statusVal) => {
+                if (!app.unitDocId) return;
+                try {
+                    const myRef = doc(app.db, 'artifacts', app.appId, 'public', 'data', 'units', app.unitDocId);
+                    await setDoc(myRef, { status: statusVal, lastUpdated: serverTimestamp() }, { merge: true });
+                } catch(e) { showAlert("ERROR", "Failed to update status."); }
+            },
+
+            triggerSOS: async () => {
+                if (!app.unitDocId) return;
+                try {
+                    const myRef = doc(app.db, 'artifacts', app.appId, 'public', 'data', 'units', app.unitDocId);
+                    await setDoc(myRef, { sos: true, status: 'breakdown', lastUpdated: serverTimestamp() }, { merge: true });
+                    document.getElementById('unit-status-selector').value = 'breakdown';
+                    showAlert("EMERGENCY BEACON ACTIVE", "HQ Command has been alerted with your exact GPS coordinates and priority status.");
+                } catch(e) {
+                    showAlert("ERROR", "Failed to transmit SOS signal.");
+                }
+            },
+
+            dismissEmergency: async () => {
+                if(app.activeEmergencyUnit) {
+                    try {
+                        await setDoc(doc(app.db, 'artifacts', app.appId, 'public', 'data', 'units', app.activeEmergencyUnit), { sos: false }, { merge: true });
+                    } catch(e) {}
+                }
+                document.getElementById('hq-emergency-banner').classList.add('hidden');
+                app.activeEmergencyUnit = null;
+            },
+
+            startTracking: () => {
+                if (!navigator.geolocation) { showAlert('SYSTEM ERROR', 'GPS Telemetry not supported.'); return; }
+                updateStatus('ACQUIRING SATELLITE...');
+
+                const myRef = doc(app.db, 'artifacts', app.appId, 'public', 'data', 'units', app.unitDocId);
+                
+                onSnapshot(myRef, (docSnap) => {
