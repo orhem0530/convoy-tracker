@@ -46,14 +46,16 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Rajdhani:wght@500;700&display=swap');
 
-        body { 
+        html, body { 
             font-family: 'Inter', sans-serif; 
             background-color: #0B0D10; 
             color: white; 
-            overflow: hidden; 
-            position: fixed;
+            margin: 0;
+            padding: 0;
             width: 100%;
             height: 100%;
+            overflow: hidden;
+            position: fixed;
         }
         
         .bg-stripes {
@@ -89,7 +91,7 @@
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
         ::-webkit-scrollbar-thumb { background: #FFB800; border-radius: 2px; }
 
-        #admin-map, #unit-map { height: 100%; width: 100%; z-index: 1; background: #0B0D10;}
+        #admin-map, #unit-map { height: 100%; width: 100%; position: absolute; top: 0; left: 0; z-index: 1; background: #0B0D10;}
         
         .leaflet-popup-content-wrapper { background: #151921; color: white; border: 1px solid #FFB800; border-radius: 0; box-shadow: 0 0 15px rgba(255, 184, 0, 0.3); }
         .leaflet-popup-tip { background: #151921; border: 1px solid #FFB800; }
@@ -104,7 +106,7 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="h-full w-full flex flex-col relative bg-convoy-dark bg-stripes">
+<body class="flex flex-col relative bg-convoy-dark bg-stripes">
 
     <!-- Header -->
     <header class="bg-black/95 border-b-2 border-convoy-amber px-3 py-2.5 z-10 flex justify-between items-center shrink-0 relative overflow-hidden">
@@ -139,7 +141,7 @@
         <button onclick="app.dismissEmergency()" class="bg-black text-red-500 px-2.5 py-1 text-[10px] font-tech cut-corner-sm shrink-0 hover:bg-white transition-colors">CLEAR</button>
     </div>
 
-    <main class="flex-1 relative overflow-hidden flex flex-col">
+    <main class="flex-1 relative overflow-hidden flex flex-col w-full h-full">
         
         <!-- Loader -->
         <div id="loading-screen" class="absolute inset-0 bg-convoy-dark z-[100] flex flex-col items-center justify-center transition-opacity duration-300 p-4 text-center">
@@ -268,8 +270,8 @@
             </div>
             
             <!-- Unit MAP View -->
-            <div id="unit-view-map" class="flex-1 relative flex flex-col bg-convoy-panel">
-                <div id="unit-map" class="h-full w-full"></div>
+            <div id="unit-view-map" class="flex-1 relative flex flex-col bg-convoy-panel w-full h-full">
+                <div id="unit-map"></div>
                 <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[400] glass-panel px-4 py-2 cut-corner-sm border border-convoy-amber/50 pointer-events-none text-center shadow-lg w-[90%] max-w-xs">
                     <p class="text-[9px] font-tech text-gray-400 tracking-widest uppercase mb-0.5">GPS Telemetry</p>
                     <div class="flex gap-2 items-center justify-center text-xs">
@@ -316,7 +318,7 @@
             <!-- Tab 1: Live Dashboard -->
             <div id="admin-view-dashboard" class="flex-1 flex flex-col lg:flex-row relative overflow-hidden bg-convoy-panel">
                 <div class="flex-1 h-[55vh] lg:h-full relative glow-cyan border-b lg:border-b-0 lg:border-r border-convoy-cyan/20">
-                    <div id="admin-map" class="h-full w-full"></div>
+                    <div id="admin-map"></div>
                     <div class="absolute top-3 left-3 z-[400] glass-panel px-3 py-2 cut-corner-sm border border-convoy-amber/30 pointer-events-none">
                         <p class="text-[9px] font-tech text-gray-400 tracking-widest uppercase">Active Units</p>
                         <div class="flex items-baseline gap-1.5">
@@ -593,7 +595,7 @@
                 app.initMap();
                 app.setupAdminTracking();
                 app.setupChat();
-                setTimeout(() => app.map.invalidateSize(), 500);
+                setTimeout(() => { if(app.map) app.map.invalidateSize(); }, 300);
             },
 
             logout: async () => {
@@ -718,6 +720,13 @@
                                     iconSize: [24, 24], iconAnchor: [12, 12]
                                 });
                                 app.unitMarker = L.marker([latitude, longitude], {icon: uIcon}).addTo(app.unitMap);
+
+                                // Automatically resize map if container changes dimension
+                                const resizeObserver = new ResizeObserver(() => {
+                                    if(app.unitMap) app.unitMap.invalidateSize();
+                                });
+                                resizeObserver.observe(document.getElementById('unit-map'));
+
                             } else {
                                 app.unitMarker.setLatLng([latitude, longitude]);
                                 app.unitMap.setView([latitude, longitude]); 
@@ -743,6 +752,11 @@
                     maxZoom: 19,
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
                 }).addTo(app.map);
+
+                const resizeObserver = new ResizeObserver(() => {
+                    if(app.map) app.map.invalidateSize();
+                });
+                resizeObserver.observe(document.getElementById('admin-map'));
             },
 
             setupAdminTracking: () => {
@@ -827,13 +841,14 @@
                 });
                 
                 document.getElementById(`admin-view-${tabId}`).classList.remove('hidden');
-                if(tabId === 'dashboard') document.getElementById(`admin-view-dashboard`).classList.add('flex');
+                if(tabId === 'dashboard') {
+                    document.getElementById(`admin-view-dashboard`).classList.add('flex');
+                    if(app.map) setTimeout(() => app.map.invalidateSize(), 200);
+                }
                 
                 const activeBtn = document.getElementById(`admin-tab-${tabId}`);
                 activeBtn.classList.remove('border-transparent', 'text-gray-400');
                 activeBtn.classList.add('border-convoy-cyan', 'text-convoy-cyan', 'bg-convoy-cyan/10');
-
-                if (tabId === 'dashboard' && app.map) setTimeout(() => app.map.invalidateSize(), 200);
             },
 
             switchUnitMainTab: (tab) => {
