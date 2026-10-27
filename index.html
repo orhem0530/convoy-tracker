@@ -34,7 +34,6 @@
                     animation: {
                         'pulse-core': 'corePulse 1.5s ease-in-out infinite',
                         'slide-up': 'slideUp 0.3s ease-out forwards',
-                        'glitch': 'glitch 0.2s linear infinite',
                     },
                     keyframes: {
                         corePulse: {
@@ -112,7 +111,7 @@
         #admin-map, #unit-map { height: 100% !important; width: 100% !important; position: absolute !important; top: 0; left: 0; z-index: 1; background: #020202;}
         
         .leaflet-tile {
-            filter: brightness(0.7) invert(1) contrast(2) hue-rotate(180deg) saturate(0.5); /* Cyan/Blue Cyberpunk Map */
+            filter: brightness(0.7) invert(1) contrast(2) hue-rotate(180deg) saturate(0.5);
         }
         
         .leaflet-popup-content-wrapper { background: #0B0D12; color: #00FFFF; border: 2px solid #E0162B; border-radius: 0px; font-family: 'Orbitron', sans-serif;}
@@ -138,9 +137,33 @@
     <!-- Header -->
     <header class="bg-black border-b border-cyber-silver/20 px-3 py-2 z-10 flex justify-between items-center shrink-0 relative shadow-[0_4px_20px_rgba(0,82,165,0.2)]">
         <div class="flex items-center gap-2.5">
-            <!-- Custom MotionGrid Logo Image Element -->
-            <div class="h-10 w-10 overflow-hidden border-2 border-cyber-blue shrink-0 bg-black flex items-center justify-center shadow-[0_0_10px_#0052A5]" style="clip-path: polygon(20% 0, 100% 0, 100% 80%, 80% 100%, 0 100%, 0 20%);">
-                <img src="logo.png" alt="MotionGrid Logo" id="header-logo-img" class="h-full w-full object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%230052A5\'><path d=\'M12 2L4 8L4 22L12 18L20 22L20 8Z\'/></svg>'">
+            <!-- Inline Vector MotionGrid Logo (Guaranteed 100% Display) -->
+            <div class="h-10 w-10 overflow-hidden border-2 border-cyber-blue shrink-0 bg-cyber-panel flex items-center justify-center shadow-[0_0_12px_#0052A5] p-1" style="clip-path: polygon(20% 0, 100% 0, 100% 80%, 80% 100%, 0 100%, 0 20%);">
+                <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_6px_#00FFFF]">
+                    <defs>
+                        <linearGradient id="mgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#00D2FF" />
+                            <stop offset="100%" stop-color="#0052A5" />
+                        </linearGradient>
+                        <linearGradient id="pinGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#00FFFF" />
+                            <stop offset="100%" stop-color="#0088FF" />
+                        </linearGradient>
+                    </defs>
+                    <!-- MotionGrid Geometric M and G Emblem -->
+                    <path d="M 18 32 L 38 48 L 38 74 L 18 58 Z" fill="url(#mgGrad)" />
+                    <path d="M 38 48 L 58 32 L 78 48 L 78 74 L 58 58 L 58 44 L 68 38 L 68 62 L 58 70 L 46 60 L 46 72 Z" fill="url(#mgGrad)" />
+                    <!-- Location Pin Beacon -->
+                    <path d="M 48 10 C 40 10 34 16 34 24 C 34 33 48 44 48 44 C 48 44 62 33 62 24 C 62 16 56 10 48 10 Z M 48 27 C 45 27 42.5 24.5 42.5 21.5 C 42.5 18.5 45 16 48 16 C 51 16 53.5 18.5 53.5 21.5 C 53.5 24.5 51 27 48 27 Z" fill="url(#pinGrad)" />
+                    <!-- Orbital Road Track Arc -->
+                    <path d="M 10 68 Q 45 42 88 30" stroke="#00FFFF" stroke-width="4.5" fill="none" stroke-linecap="round" />
+                    <path d="M 12 67 Q 45 42 86 31" stroke="#FFFFFF" stroke-width="1.8" stroke-dasharray="3,3" fill="none" />
+                    <!-- Pixel Digital Tech Cubes -->
+                    <rect x="80" y="32" width="4" height="4" fill="#00FFFF" />
+                    <rect x="86" y="27" width="4" height="4" fill="#00FFFF" />
+                    <rect x="86" y="34" width="4" height="4" fill="#00D2FF" />
+                    <rect x="92" y="30" width="4" height="4" fill="#0052A5" />
+                </svg>
             </div>
             <div>
                 <h1 class="text-sm md:text-lg font-cyber text-white font-bold leading-none tracking-widest flex items-center gap-1.5">
@@ -651,14 +674,24 @@
                 }
 
                 let existingUnitId = null;
+                let existingUnitData = null;
+
                 for (const [id, unit] of Object.entries(app.unitsList)) {
                     if (unit.name.toUpperCase() === nameInput) {
                         if (unit.pin && unit.pin !== pinInput) {
                             err.innerText = "DENIED: INVALID SPARK CODE"; err.classList.remove('hidden'); return;
                         }
                         existingUnitId = id;
+                        existingUnitData = unit;
                         break;
                     }
+                }
+
+                // SESSION LOCK PROTOCOL CHECK
+                if (existingUnitData && existingUnitData.activeSessionId && existingUnitData.activeSessionId !== app.userId) {
+                    err.innerText = "DENIED: OPERATIVE ACTIVE ON ANOTHER TERMINAL. LOGOUT REQUIRED."; 
+                    err.classList.remove('hidden'); 
+                    return;
                 }
 
                 app.unitName = nameInput;
@@ -670,7 +703,9 @@
                 
                 const myRef = doc(app.db, 'artifacts', app.appId, 'public', 'data', 'units', app.unitDocId);
                 await setDoc(myRef, {
-                    name: app.unitName, pin: pinInput, status: 'in_transit', sos: false, lastUpdated: serverTimestamp()
+                    name: app.unitName, pin: pinInput, status: 'in_transit', sos: false, 
+                    activeSessionId: app.userId, // SET THE DEVICE LOCK
+                    lastUpdated: serverTimestamp()
                 }, { merge: true });
 
                 showScreen('unit-screen');
@@ -706,7 +741,8 @@
                 if (app.role === 'unit' && app.unitDocId) {
                     try {
                         const myRef = doc(app.db, 'artifacts', app.appId, 'public', 'data', 'units', app.unitDocId);
-                        await setDoc(myRef, { sos: false }, { merge: true });
+                        // CLEAR THE DEVICE LOCK ON LOGOUT
+                        await setDoc(myRef, { sos: false, activeSessionId: null }, { merge: true });
                     } catch(e) {}
                 }
 
@@ -825,7 +861,6 @@
                                         attribution: '&copy; OpenStreetMap contributors'
                                     }).addTo(app.unitMap);
                                     
-                                    // Mecha Autobot Shield Marker
                                     const autobotSvg = `
                                         <div class="autobot-marker w-12 h-12 relative">
                                             <div class="absolute inset-0 bg-cyber-red/20 rounded-full animate-ping"></div>
@@ -1167,7 +1202,9 @@
 
                 try {
                     await setDoc(doc(collection(app.db, 'artifacts', app.appId, 'public', 'data', 'units')), {
-                        name: name, pin: pin, photoUrl: photoUrl, status: 'in_transit', sos: false, createdAt: serverTimestamp()
+                        name: name, pin: pin, photoUrl: photoUrl, status: 'in_transit', sos: false, 
+                        activeSessionId: null, // Init empty session
+                        createdAt: serverTimestamp()
                     });
                     document.getElementById('add-unit-name').value = '';
                     document.getElementById('add-unit-pin').value = '';
@@ -1237,7 +1274,12 @@
                 
                 if(!newName || !newPin) return showAlert("ERROR", "Designation and Spark Code required.");
 
-                let updateData = { name: newName, pin: newPin, status: document.getElementById('edit-unit-status').value };
+                let updateData = { 
+                    name: newName, 
+                    pin: newPin, 
+                    status: document.getElementById('edit-unit-status').value,
+                    activeSessionId: null // CLEAR SESSION LOCK UPON ADMIN SAVE (Reset)
+                };
                 if (fileInput.files && fileInput.files[0]) {
                     try { updateData.photoUrl = await processImageFile(fileInput.files[0]); } catch (e) { return showAlert("ERROR", "Image scan error."); }
                 }
