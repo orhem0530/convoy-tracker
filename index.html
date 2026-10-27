@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MotionGrid - Fleet Telemetry Command</title>
+    <title>MotionGrid - Teletraan-1 Command</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -16,29 +16,30 @@
             theme: {
                 extend: {
                     colors: {
-                        lcars: {
-                            gold: '#FF9900',
-                            orange: '#CC6600',
-                            blue: '#99CCFF',
-                            purple: '#CC99CC',
-                            red: '#CC3333',
-                            dark: '#000000',
-                            panel: '#1A1A1A',
-                            surface: '#2C2C2C',
+                        cyber: {
+                            red: '#E0162B',    // Autobot Red
+                            blue: '#0052A5',   // Optimus Blue
+                            accent: '#FFC72C', // Bumblebee Yellow
+                            silver: '#A2A9AF', // Cybertron Chrome
+                            dark: '#050505',
+                            panel: '#0B0D12',
+                            surface: '#15181E',
+                            neon: '#00FFFF'    // Energon Glow
                         }
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                        lcars: ['Rajdhani', 'Arial Black', 'monospace']
+                        cyber: ['Orbitron', 'sans-serif']
                     },
                     animation: {
-                        'pulse-warp': 'warpPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'pulse-core': 'corePulse 1.5s ease-in-out infinite',
                         'slide-up': 'slideUp 0.3s ease-out forwards',
+                        'glitch': 'glitch 0.2s linear infinite',
                     },
                     keyframes: {
-                        warpPulse: {
-                            '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-                            '50%': { opacity: '0.6', transform: 'scale(1.08)' },
+                        corePulse: {
+                            '0%, 100%': { opacity: '1', transform: 'scale(1)', filter: 'brightness(1)' },
+                            '50%': { opacity: '0.8', transform: 'scale(1.05)', filter: 'brightness(1.5)' },
                         },
                         slideUp: {
                             '0%': { transform: 'translateY(20px)', opacity: '0' },
@@ -50,12 +51,12 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Rajdhani:wght@500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Orbitron:wght@500;700;900&display=swap');
 
         html, body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #000000; 
-            color: #99CCFF; 
+            background-color: #050505; 
+            color: #A2A9AF; 
             margin: 0;
             padding: 0;
             width: 100%;
@@ -64,278 +65,289 @@
             position: fixed;
         }
         
-        .font-lcars { font-family: 'Rajdhani', monospace; letter-spacing: 1px; text-transform: uppercase; }
+        .font-cyber { font-family: 'Orbitron', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; }
         
-        .lcars-bar-top {
-            background: linear-gradient(90deg, #FF9900 0%, #CC6600 40%, #99CCFF 100%);
-            height: 8px;
+        .cyber-bar-top {
+            background: linear-gradient(90deg, #E0162B 0%, #0052A5 50%, #FFC72C 100%);
+            height: 6px;
+            box-shadow: 0 2px 10px rgba(224, 22, 43, 0.5);
         }
         
-        .lcars-panel { 
-            background: #1A1A1A; 
-            border-left: 6px solid #FF9900;
-            border-right: 2px solid #CC99CC;
+        .cyber-panel { 
+            background: #0B0D12; 
+            border: 1px solid #15181E;
+            border-top: 4px solid #E0162B;
+            position: relative;
+        }
+        .cyber-panel-blue {
+            border-top: 4px solid #0052A5;
         }
 
-        .lcars-button {
-            background-color: #FF9900;
-            color: #000000;
+        .cyber-button {
+            background-color: #E0162B;
+            color: #FFFFFF;
             font-weight: 700;
-            border-radius: 20px 8px 8px 20px;
+            border-radius: 4px;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
             transition: all 0.2s ease;
+            text-transform: uppercase;
         }
-        .lcars-button:active, .lcars-button:hover {
-            background-color: #99CCFF;
-        }
+        .cyber-button:active, .cyber-button:hover { background-color: #0052A5; }
 
-        .lcars-button-blue {
-            background-color: #99CCFF;
-            color: #000000;
+        .cyber-button-blue {
+            background-color: #0052A5;
+            color: #FFFFFF;
             font-weight: 700;
-            border-radius: 8px 20px 20px 8px;
+            border-radius: 4px;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
             transition: all 0.2s ease;
+            text-transform: uppercase;
         }
-        .lcars-button-blue:hover {
-            background-color: #FF9900;
-        }
+        .cyber-button-blue:hover { background-color: #E0162B; }
 
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #000000; }
-        ::-webkit-scrollbar-thumb { background: #FF9900; border-radius: 2px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #E0162B; }
 
-        #admin-map, #unit-map { height: 100% !important; width: 100% !important; position: absolute !important; top: 0; left: 0; z-index: 1; background: #050811;}
+        #admin-map, #unit-map { height: 100% !important; width: 100% !important; position: absolute !important; top: 0; left: 0; z-index: 1; background: #020202;}
         
         .leaflet-tile {
-            filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+            filter: brightness(0.7) invert(1) contrast(2) hue-rotate(180deg) saturate(0.5); /* Cyan/Blue Cyberpunk Map */
         }
         
-        .leaflet-popup-content-wrapper { background: #1A1A1A; color: #99CCFF; border: 2px solid #FF9900; border-radius: 12px; }
-        .leaflet-popup-tip { background: #FF9900; }
+        .leaflet-popup-content-wrapper { background: #0B0D12; color: #00FFFF; border: 2px solid #E0162B; border-radius: 0px; font-family: 'Orbitron', sans-serif;}
+        .leaflet-popup-tip { background: #E0162B; }
         .custom-div-icon { background: transparent; border: none; }
 
-        .starship-marker {
+        .autobot-marker {
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
         }
-        .warp-nacelle {
-            animation: warpPulse 0.8s infinite alternate;
+        
+        .energon-core {
+            animation: corePulse 1s infinite alternate;
         }
     </style>
 </head>
 <body class="flex flex-col relative bg-black">
 
-    <div class="lcars-bar-top w-full shrink-0"></div>
+    <div class="cyber-bar-top w-full shrink-0"></div>
 
-    <!-- Header with Integrated Logo -->
-    <header class="bg-black border-b-2 border-lcars-orange px-3 py-2 z-10 flex justify-between items-center shrink-0 relative">
+    <!-- Header -->
+    <header class="bg-black border-b border-cyber-silver/20 px-3 py-2 z-10 flex justify-between items-center shrink-0 relative shadow-[0_4px_20px_rgba(0,82,165,0.2)]">
         <div class="flex items-center gap-2.5">
-            <div class="h-10 w-32 md:w-36 flex items-center overflow-hidden shrink-0">
-                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAhuSURBVHja7V3vThw3Enw7h9B6W4m6i8D/v+TvefE/h1gXJbE+6o1l42lXWbt7r7N6x9sH2yS72X2xH4xN2c9p2N30M001Z9e6uqrU/y2vXfM0r22v3v0zT/M0r03t3v3dffvH++3r33w//25v8/z9ffc/D+T6X6136wD+uFevffbXfNffP88b9ffWfG0L6wH5r7+vvXvD7a83+974N+v3v93r3s7r7979W8v//f10f4L6X7z2W+8f+8v7+uP+fPfP/uP/7eXef/f3j/3//P6vH7X+7fW/+ffX/r7e+1ffP//1vVv75/uXq398f8v9fbf+1frb//3wP67V++u+ffL9H7/8n8fX/Xv3f/W++6+/e++p//0f7qPfNffO/+83vP97b//2p/98v//sPX8v9u7b/+7u3/9vHbf+/3e7u//b9/bf+/+r+v/b6//+P+vH/vfftf7L7z+n1//f//ev/r3t9f7PffO//+/d7vP6r7P66/v1ff+/vN//9f/d/v9P08b9e/fPv1W68H+/vfO//f+u1e/vfPffP/+6vfL/ff39/e7v//3v//d7u379ffv+vvfPvvf7ffNffP9fbf/ffNffvP/+7t//vvvP3v/fP8vffvffvL//f9fP9/fvvvP3vP7vffP77f//vHfe/f7736+//v/vffvP//v/vffv//+9vfvfv//ff7f//vH2vvvP7vP///vP///vP///vP//v///vP//vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vFile:data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAhuSURBVHja7V3vThw3Enw7h9B6W4m6i8D/v+TvefE/h1gXJbE+6o1l42lXWbt7r7N6x9sH2yS72X2xH4xN2c9p2N30M001Z9e6uqrU/y2vXfM0r22v3v0zT/M0r03t3v3dffvH++3r33w//25v8/z9ffc/D+T6X6136wD+uFevffbXfNffP88b9ffWfG0L6wH5r7+vvXvD7a83+974N+v3v93r3s7r7979W8v//f10f4L6X7z2W+8f+8v7+uP+fPfP/uP/7eXef/f3j/3//P6vH7X+7fW/+ffX/r7e+1ffP//1vVv75/uXq398f8v9fbf+1frb//3wP67V++u+ffL9H7/8n8fX/Xv3f/W++6+/e++p//0f7qPfNffO/+83vP97b//2p/98v//sPX8v9u7b/+7u3/9vHbf+/3e7u//b9/bf+/+r+v/b6//+P+vH/vfftf7L7z+n1//f//ev/r3t9f7PffO//+/d7vP6r7P66/v1ff+/vN//9f/d/v9P08b9e/fPv1W68H+/vfO//f+u1e/vfPffP/+6vfL/ff39/e7v//3v//d7u379ffv+vvfPvvf7ffNffP9fbf/ffNffvP/+7t//vvvP3v/fP8vffvffvL//f9fP9/fvvvP3vP7vffP77f//vHfe/f7736+//v/vffvP//v/vffv//+9vfvfv//ff7f//vH2vvvP7vP///vP///vP///vP//v///vP//vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///vP///v/hM7wAAAAAElFTkSuQmCC" class="h-8 w-auto object-contain">
+            <!-- Custom MotionGrid Logo Image Element -->
+            <div class="h-10 w-10 overflow-hidden border-2 border-cyber-blue shrink-0 bg-black flex items-center justify-center shadow-[0_0_10px_#0052A5]" style="clip-path: polygon(20% 0, 100% 0, 100% 80%, 80% 100%, 0 100%, 0 20%);">
+                <img src="logo.png" alt="MotionGrid Logo" id="header-logo-img" class="h-full w-full object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%230052A5\'><path d=\'M12 2L4 8L4 22L12 18L20 22L20 8Z\'/></svg>'">
             </div>
             <div>
-                <h1 class="text-sm md:text-lg font-lcars text-lcars-blue font-bold leading-none tracking-widest">
-                    MOTION<span class="text-lcars-gold">GRID</span>
+                <h1 class="text-sm md:text-lg font-cyber text-white font-bold leading-none tracking-widest flex items-center gap-1.5">
+                    MOTION<span class="text-cyber-blue">GRID</span>
                 </h1>
-                <p class="text-[9px] font-lcars text-lcars-purple tracking-widest">“Every Vehicle. Every Movement. One View.”</p>
+                <p class="text-[9px] font-cyber text-cyber-silver tracking-widest">“Every Vehicle. Every Movement. One View.”</p>
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <div id="status-indicator" class="font-lcars text-lcars-gold bg-lcars-panel border border-lcars-gold/40 px-3 py-1 text-xs rounded-full flex items-center">
-                <i class="fa-solid fa-circle text-[7px] mr-1.5 animate-pulse"></i> <span>SUBSPACE OFFLINE</span>
+            <div id="status-indicator" class="font-cyber text-cyber-accent bg-cyber-panel border border-cyber-accent/40 px-3 py-1 text-[10px] flex items-center shadow-[0_0_8px_rgba(255,199,44,0.3)]">
+                <i class="fa-solid fa-square text-[6px] mr-1.5 animate-pulse"></i> <span>TELETRAAN-1 OFFLINE</span>
             </div>
-            <button id="logout-btn" onclick="app.logout()" class="hidden bg-lcars-red text-white h-8 w-8 rounded-full flex items-center justify-center shadow-md transition-colors" title="Abort Link">
+            <button id="logout-btn" onclick="app.logout()" class="hidden bg-cyber-red text-white h-8 w-8 flex items-center justify-center shadow-[0_0_10px_#E0162B] transition-colors hover:bg-white hover:text-cyber-red" title="Sever Link">
                 <i class="fa-solid fa-power-off text-xs"></i>
             </button>
         </div>
     </header>
 
     <!-- Emergency / Arrival Alert Banner -->
-    <div id="hq-emergency-banner" class="hidden bg-lcars-red text-white px-3 py-2 font-lcars text-center uppercase tracking-widest text-xs z-50 flex items-center justify-between gap-2 animate-pulse">
+    <div id="hq-emergency-banner" class="hidden bg-cyber-red text-white px-3 py-2 font-cyber text-center uppercase tracking-widest text-xs z-50 flex items-center justify-between gap-2 shadow-[0_0_15px_#E0162B]">
         <div class="flex items-center gap-2">
-            <i class="fa-solid fa-triangle-exclamation text-base"></i>
-            <span id="emergency-banner-text" class="text-left leading-tight">RED ALERT: DISTRESS BEACON ACTIVE</span>
+            <i class="fa-solid fa-skull text-base animate-pulse"></i>
+            <span id="emergency-banner-text" class="text-left leading-tight font-bold">DECEPTICON THREAT: RED ALERT</span>
         </div>
-        <button onclick="app.dismissEmergency()" class="bg-black text-lcars-red px-3 py-1 text-[10px] font-lcars rounded-full shrink-0 hover:bg-white">STAND DOWN</button>
+        <button onclick="app.dismissEmergency()" class="bg-black text-cyber-red px-3 py-1 text-[10px] font-cyber border border-cyber-red hover:bg-white transition-colors">STAND DOWN</button>
     </div>
 
     <main class="flex-1 relative overflow-hidden flex flex-col w-full h-full">
         
         <!-- Loader -->
         <div id="loading-screen" class="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center transition-opacity duration-300 p-4 text-center">
-            <div class="w-12 h-12 border-4 border-lcars-gold border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p class="text-lcars-blue font-lcars tracking-[0.2em] text-sm animate-pulse">ESTABLISHING SUBSPACE LINK...</p>
+            <div class="relative w-16 h-16 mb-4 flex items-center justify-center">
+                <div class="absolute inset-0 border-4 border-cyber-blue border-t-transparent animate-spin rounded-full"></div>
+                <div class="absolute inset-2 border-4 border-cyber-red border-b-transparent animate-[spin_1.5s_reverse_infinite] rounded-full"></div>
+                <i class="fa-solid fa-robot text-cyber-accent text-xl"></i>
+            </div>
+            <p class="text-cyber-neon font-cyber tracking-[0.2em] text-sm animate-pulse">BOOTING TELETRAAN-1 NETWORK...</p>
         </div>
 
         <!-- Role Select -->
-        <div id="role-screen" class="hidden h-full w-full flex flex-col items-center justify-center p-4 relative z-10 overflow-y-auto">
+        <div id="role-screen" class="hidden h-full w-full flex flex-col items-center justify-center p-4 relative z-10 overflow-y-auto bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyber-panel via-black to-black">
             <div class="w-full max-w-sm space-y-4 my-auto">
-                <div class="text-center mb-6">
-                    <h2 class="text-xl font-lcars text-lcars-blue font-bold tracking-widest">COMMAND CLEARANCE</h2>
-                    <p class="text-xs font-lcars text-lcars-gold">Select your operational station</p>
+                <div class="text-center mb-8">
+                    <h2 class="text-xl font-cyber text-white font-bold tracking-widest text-shadow">PRIME DIRECTIVE</h2>
+                    <p class="text-[10px] font-cyber text-cyber-accent uppercase tracking-widest">Select Operational Interface</p>
                 </div>
                 
-                <button onclick="app.showUnitSetup()" class="w-full group bg-lcars-panel border-l-8 border-lcars-gold p-4 rounded-r-3xl transition-all hover:bg-lcars-surface flex items-center gap-4">
-                    <div class="h-12 w-12 rounded-full bg-lcars-gold text-black flex items-center justify-center text-xl shrink-0 font-bold">
-                        <i class="fa-solid fa-shuttle-space"></i>
+                <button onclick="app.showUnitSetup()" class="w-full group cyber-panel p-4 transition-all hover:bg-cyber-surface flex items-center gap-4 hover:border-cyber-red hover:shadow-[0_0_15px_rgba(224,22,43,0.4)]">
+                    <div class="h-12 w-12 bg-cyber-red text-white flex items-center justify-center text-xl shrink-0 font-bold" style="clip-path: polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%);">
+                        <i class="fa-solid fa-truck-fast transform -skew-x-12"></i>
                     </div>
-                    <div class="text-left font-lcars">
-                        <h3 class="text-base text-lcars-blue font-bold uppercase tracking-wider mb-0.5">Vessel Unit</h3>
-                        <p class="text-xs text-gray-400">Transmit Coordinates & Comms</p>
+                    <div class="text-left font-cyber">
+                        <h3 class="text-base text-white font-bold uppercase tracking-wider mb-0.5 group-hover:text-cyber-red transition-colors">Autobot Operative</h3>
+                        <p class="text-[9px] text-cyber-silver tracking-widest">Transmit Telemetry & Comms</p>
                     </div>
                 </button>
 
-                <button onclick="app.showAdminLogin()" class="w-full group bg-lcars-panel border-l-8 border-lcars-blue p-4 rounded-r-3xl transition-all hover:bg-lcars-surface flex items-center gap-4">
-                    <div class="h-12 w-12 rounded-full bg-lcars-blue text-black flex items-center justify-center text-xl shrink-0 font-bold">
-                        <i class="fa-solid fa-desktop"></i>
+                <button onclick="app.showAdminLogin()" class="w-full group cyber-panel cyber-panel-blue p-4 transition-all hover:bg-cyber-surface flex items-center gap-4 hover:border-cyber-blue hover:shadow-[0_0_15px_rgba(0,82,165,0.4)]">
+                    <div class="h-12 w-12 bg-cyber-blue text-white flex items-center justify-center text-xl shrink-0 font-bold" style="clip-path: polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%);">
+                        <i class="fa-solid fa-satellite-dish transform -skew-x-12"></i>
                     </div>
-                    <div class="text-left font-lcars">
-                        <h3 class="text-base text-lcars-gold font-bold uppercase tracking-wider mb-0.5">MotionGrid Command</h3>
-                        <p class="text-xs text-gray-400">Monitor Fleet & Tactical Grid</p>
+                    <div class="text-left font-cyber">
+                        <h3 class="text-base text-white font-bold uppercase tracking-wider mb-0.5 group-hover:text-cyber-blue transition-colors">Teletraan-1 Command</h3>
+                        <p class="text-[9px] text-cyber-silver tracking-widest">Monitor Global Grid</p>
                     </div>
                 </button>
             </div>
         </div>
 
         <!-- Unit Login -->
-        <div id="unit-setup-screen" class="hidden h-full w-full flex flex-col items-center justify-center p-4 z-10 relative overflow-y-auto">
-            <div class="lcars-panel p-6 rounded-3xl max-w-sm w-full text-center space-y-4 my-auto shadow-2xl">
-                <div class="flex justify-between items-center mb-1">
-                    <button onclick="app.showRoleScreen()" class="text-lcars-gold p-1"><i class="fa-solid fa-arrow-left"></i></button>
-                    <h2 class="text-base font-lcars text-lcars-blue font-bold">VESSEL AUTHENTICATION</h2>
+        <div id="unit-setup-screen" class="hidden h-full w-full flex flex-col items-center justify-center p-4 z-10 relative overflow-y-auto bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyber-panel via-black to-black">
+            <div class="cyber-panel p-6 max-w-sm w-full text-center space-y-4 my-auto shadow-[0_0_30px_rgba(224,22,43,0.15)]">
+                <div class="flex justify-between items-center mb-2 border-b border-cyber-silver/20 pb-2">
+                    <button onclick="app.showRoleScreen()" class="text-cyber-red p-1 hover:text-white transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h2 class="text-sm font-cyber text-white font-bold tracking-widest">OPERATIVE AUTH</h2>
                     <div class="w-6"></div>
                 </div>
-                <div class="text-left space-y-3 font-lcars">
+                <div class="text-left space-y-4 font-cyber">
                     <div>
-                        <label class="block text-[10px] text-lcars-gold mb-1 tracking-wider">Vessel Callsign</label>
-                        <input type="text" id="unit-name-input" class="w-full bg-black border border-lcars-gold/50 rounded-lg px-3.5 py-2.5 text-lcars-blue focus:outline-none focus:border-lcars-blue uppercase text-base font-lcars" placeholder="e.g. DEFIANT">
+                        <label class="block text-[9px] text-cyber-accent mb-1 tracking-wider uppercase">Designation</label>
+                        <input type="text" id="unit-name-input" class="w-full bg-black border border-cyber-red/50 px-3.5 py-2.5 text-white focus:outline-none focus:border-cyber-red uppercase text-sm" placeholder="e.g. OPTIMUS">
                     </div>
                     <div>
-                        <label class="block text-[10px] text-lcars-gold mb-1 tracking-wider">Security Access Code</label>
-                        <input type="password" id="unit-pin-input" class="w-full bg-black border border-lcars-gold/50 rounded-lg px-3.5 py-2.5 text-lcars-blue focus:outline-none focus:border-lcars-blue text-base" placeholder="••••">
+                        <label class="block text-[9px] text-cyber-accent mb-1 tracking-wider uppercase">Spark Code</label>
+                        <input type="password" id="unit-pin-input" class="w-full bg-black border border-cyber-red/50 px-3.5 py-2.5 text-white focus:outline-none focus:border-cyber-red text-sm tracking-widest" placeholder="••••">
                     </div>
                 </div>
-                <button onclick="app.joinAsUnit()" class="w-full lcars-button py-3 text-base tracking-widest mt-4">
-                    ENGAGE VESSEL LINK <i class="fa-solid fa-angles-right ml-1"></i>
+                <button onclick="app.joinAsUnit()" class="w-full cyber-button py-3 text-sm tracking-widest mt-6">
+                    ROLL OUT <i class="fa-solid fa-bolt ml-1"></i>
                 </button>
-                <p id="setup-error" class="text-lcars-red text-xs font-lcars bg-lcars-red/10 border border-lcars-red/30 p-2 rounded-lg hidden animate-pulse"></p>
+                <p id="setup-error" class="text-cyber-red text-xs font-cyber bg-cyber-red/10 border border-cyber-red/30 p-2 hidden"></p>
             </div>
         </div>
 
         <!-- Admin Login -->
-        <div id="admin-login-screen" class="hidden h-full w-full flex flex-col items-center justify-center p-4 z-10 relative overflow-y-auto">
-            <div class="lcars-panel p-6 rounded-3xl max-w-sm w-full text-center space-y-4 my-auto shadow-2xl" style="border-left-color: #99CCFF;">
-                <div class="flex justify-between items-center mb-1">
-                    <button onclick="app.showRoleScreen()" class="text-lcars-blue p-1"><i class="fa-solid fa-arrow-left"></i></button>
-                    <h2 class="text-base font-lcars text-lcars-gold font-bold">COMMAND LOGIN</h2>
+        <div id="admin-login-screen" class="hidden h-full w-full flex flex-col items-center justify-center p-4 z-10 relative overflow-y-auto bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyber-panel via-black to-black">
+            <div class="cyber-panel cyber-panel-blue p-6 max-w-sm w-full text-center space-y-4 my-auto shadow-[0_0_30px_rgba(0,82,165,0.15)]">
+                <div class="flex justify-between items-center mb-2 border-b border-cyber-silver/20 pb-2">
+                    <button onclick="app.showRoleScreen()" class="text-cyber-blue p-1 hover:text-white transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h2 class="text-sm font-cyber text-white font-bold tracking-widest">COMMAND OVERRIDE</h2>
                     <div class="w-6"></div>
                 </div>
-                <div class="text-left font-lcars">
-                    <label class="block text-[10px] text-lcars-blue mb-1 tracking-wider">Master Clearance Code</label>
-                    <input type="password" id="admin-password-input" class="w-full bg-black border border-lcars-blue/50 rounded-lg px-3.5 py-2.5 text-lcars-gold focus:outline-none focus:border-lcars-gold text-base" placeholder="••••••••">
+                <div class="text-left font-cyber">
+                    <label class="block text-[9px] text-cyber-neon mb-1 tracking-wider uppercase">Matrix Access Code</label>
+                    <input type="password" id="admin-password-input" class="w-full bg-black border border-cyber-blue/50 px-3.5 py-2.5 text-white focus:outline-none focus:border-cyber-neon text-sm tracking-widest" placeholder="••••••••">
                 </div>
-                <button onclick="app.joinAsAdmin()" class="w-full lcars-button-blue py-3 text-base tracking-widest mt-4">
-                    ACCESS COMMAND <i class="fa-solid fa-unlock ml-1"></i>
+                <button onclick="app.joinAsAdmin()" class="w-full cyber-button-blue py-3 text-sm tracking-widest mt-6">
+                    ACCESS TELETRAAN-1 <i class="fa-solid fa-network-wired ml-1"></i>
                 </button>
-                <p id="admin-login-error" class="text-lcars-red text-xs font-lcars bg-lcars-red/10 border border-lcars-red/30 p-2 rounded-lg hidden animate-pulse"></p>
+                <p id="admin-login-error" class="text-cyber-red text-xs font-cyber bg-cyber-red/10 border border-cyber-red/30 p-2 hidden"></p>
             </div>
         </div>
 
         <!-- Unit Dashboard -->
         <div id="unit-screen" class="hidden h-full w-full flex flex-col relative z-10">
             <!-- Info Bar -->
-            <div class="bg-black border-b border-lcars-gold/40 px-3 py-2.5 shrink-0 flex items-center justify-between relative overflow-hidden">
+            <div class="bg-cyber-panel border-b border-cyber-red px-3 py-2.5 shrink-0 flex items-center justify-between relative overflow-hidden">
                 <div class="flex items-center gap-3 relative z-10 overflow-hidden">
-                    <div id="unit-avatar-display" class="h-10 w-10 rounded-xl bg-lcars-gold text-black flex items-center justify-center font-lcars font-bold text-base overflow-hidden border border-white shrink-0"></div>
+                    <div id="unit-avatar-display" class="h-10 w-10 bg-cyber-red text-white flex items-center justify-center font-cyber font-bold text-base overflow-hidden border-2 border-cyber-accent shrink-0" style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);"></div>
                     <div class="overflow-hidden">
-                        <h3 id="unit-name-display" class="font-lcars text-base text-lcars-blue font-bold tracking-wider truncate leading-none">VESSEL</h3>
+                        <h3 id="unit-name-display" class="font-cyber text-base text-white font-bold tracking-wider truncate leading-none">AUTOBOT</h3>
                         <div class="flex items-center gap-1.5 mt-1">
-                            <span class="relative flex h-2 w-2 shrink-0">
-                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-lcars-gold opacity-75"></span>
-                              <span class="relative inline-flex rounded-full h-2 w-2 bg-lcars-gold"></span>
+                            <span class="relative flex h-1.5 w-1.5 shrink-0">
+                              <span class="animate-ping absolute inline-flex h-full w-full bg-cyber-neon opacity-75"></span>
+                              <span class="relative inline-flex h-1.5 w-1.5 bg-cyber-neon"></span>
                             </span>
-                            <p id="unit-status-label" class="text-[10px] font-lcars text-lcars-gold tracking-widest uppercase truncate">IMPULSE ACTIVE</p>
+                            <p id="unit-status-label" class="text-[10px] font-cyber text-cyber-neon tracking-widest uppercase truncate">OPTICS ONLINE</p>
                         </div>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 relative z-10 shrink-0">
-                    <select id="unit-status-selector" onchange="app.updateMyUnitStatus(this.value)" class="bg-lcars-panel text-lcars-gold border border-lcars-gold/50 font-lcars text-[11px] rounded-lg px-2 py-1.5 uppercase focus:outline-none">
-                        <option value="in_transit">🟢 WARP / TRANSIT</option>
-                        <option value="pit_stop">🟡 DOCKING BAY</option>
-                        <option value="delayed">🟠 COURSE DEVIATION</option>
-                        <option value="breakdown">🔴 CRITICAL STATUS</option>
+                    <select id="unit-status-selector" onchange="app.updateMyUnitStatus(this.value)" class="bg-black text-cyber-silver border border-cyber-silver/50 font-cyber text-[9px] px-2 py-1.5 uppercase focus:outline-none tracking-wider">
+                        <option value="in_transit">🟢 ROLLING OUT</option>
+                        <option value="pit_stop">🟡 RECHARGING</option>
+                        <option value="delayed">🟠 REROUTING</option>
+                        <option value="breakdown">🔴 CRITICAL DAMAGE</option>
                     </select>
-                    <button onclick="app.triggerSOS()" class="bg-lcars-red hover:bg-red-700 text-white font-lcars px-3 py-1.5 rounded-lg border border-white/30 shadow-md animate-pulse flex items-center gap-1.5 text-xs font-bold">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        <span>DISTRESS</span>
+                    <button onclick="app.triggerSOS()" class="bg-cyber-red hover:bg-white hover:text-cyber-red text-white font-cyber px-3 py-1.5 border border-transparent hover:border-cyber-red transition-colors flex items-center gap-1.5 text-[10px] font-bold tracking-widest">
+                        <i class="fa-solid fa-skull"></i>
+                        <span>S.O.S.</span>
                     </button>
                 </div>
             </div>
 
             <!-- Unit Main Tabs -->
-            <div class="flex bg-black shrink-0 font-lcars tracking-wider uppercase text-xs border-b border-lcars-surface z-20">
-                <button onclick="app.switchUnitMainTab('map')" id="u-main-tab-map" class="flex-1 py-2.5 border-b-2 border-lcars-gold text-lcars-gold bg-lcars-gold/10 transition-colors">
-                    <i class="fa-solid fa-globe mr-1.5"></i>Tactical Map
+            <div class="flex bg-black shrink-0 font-cyber tracking-widest uppercase text-[10px] border-b border-cyber-surface z-20">
+                <button onclick="app.switchUnitMainTab('map')" id="u-main-tab-map" class="flex-1 py-3 border-b-2 border-cyber-red text-cyber-red bg-cyber-red/10 transition-colors">
+                    <i class="fa-solid fa-crosshairs mr-1.5"></i>Grid Map
                 </button>
-                <button onclick="app.switchUnitMainTab('comms')" id="u-main-tab-comms" class="flex-1 py-2.5 border-b-2 border-transparent text-gray-400 hover:text-white transition-colors">
-                    <i class="fa-solid fa-walkie-talkie mr-1.5"></i>Subspace Comms
+                <button onclick="app.switchUnitMainTab('comms')" id="u-main-tab-comms" class="flex-1 py-3 border-b-2 border-transparent text-cyber-silver hover:text-white transition-colors">
+                    <i class="fa-solid fa-satellite-dish mr-1.5"></i>Comms Link
                 </button>
             </div>
             
             <!-- Unit MAP View -->
-            <div id="unit-view-map" class="flex-1 relative flex flex-col bg-lcars-panel w-full h-full">
+            <div id="unit-view-map" class="flex-1 relative flex flex-col bg-black w-full h-full">
                 <div id="unit-map"></div>
                 
                 <!-- Destination Search & Navigation Bar Overlay -->
-                <div class="absolute top-3 left-3 right-16 z-[400] lcars-panel p-2 rounded-2xl border border-lcars-gold/50 shadow-xl flex gap-1.5 items-center">
-                    <input type="text" id="nav-destination-input" placeholder="ENTER DESTINATION ADDRESS..." class="flex-1 bg-black border border-lcars-gold/40 rounded-xl px-3 py-2 text-lcars-gold font-lcars text-xs uppercase focus:outline-none focus:border-lcars-blue">
-                    <button onclick="app.setDestination()" class="lcars-button px-3 py-2 text-xs shrink-0 flex items-center gap-1">
-                        <i class="fa-solid fa-location-arrow"></i> <span>ENGAGE</span>
+                <div class="absolute top-3 left-3 right-16 z-[400] bg-cyber-panel/90 p-2 border border-cyber-red/50 shadow-[0_0_15px_rgba(224,22,43,0.3)] flex gap-1.5 items-center backdrop-blur-sm" style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">
+                    <input type="text" id="nav-destination-input" placeholder="ENTER TARGET COORDINATES..." class="flex-1 bg-black border border-cyber-red/40 px-3 py-2 text-cyber-accent font-cyber text-[10px] uppercase focus:outline-none focus:border-cyber-neon tracking-widest">
+                    <button onclick="app.setDestination()" class="cyber-button px-3 py-2 text-[10px] shrink-0 flex items-center gap-1">
+                        <i class="fa-solid fa-location-crosshairs"></i> <span>LOCK</span>
                     </button>
-                    <button onclick="app.clearDestination()" id="clear-nav-btn" class="hidden bg-lcars-red text-white px-2.5 py-2 rounded-xl text-xs shrink-0" title="Abort Route">
+                    <button onclick="app.clearDestination()" id="clear-nav-btn" class="hidden bg-black border border-cyber-red text-cyber-red px-3 py-2 text-[10px] hover:bg-cyber-red hover:text-white transition-colors shrink-0" title="Abort Route">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
 
-                <!-- Map Control Overlay Buttons (Recenter & True North) -->
+                <!-- Map Control Overlay Buttons -->
                 <div class="absolute top-3 right-3 z-[400] flex flex-col gap-2">
-                    <button onclick="app.recenterUnitMap()" class="bg-lcars-panel border border-lcars-gold/60 text-lcars-gold h-10 w-10 rounded-xl flex items-center justify-center shadow-lg hover:bg-lcars-gold hover:text-black transition-colors" title="Recenter Map">
-                        <i class="fa-solid fa-crosshairs text-sm"></i>
+                    <button onclick="app.recenterUnitMap()" class="bg-cyber-panel border border-cyber-red/60 text-cyber-red h-10 w-10 flex items-center justify-center shadow-[0_0_10px_rgba(224,22,43,0.3)] hover:bg-cyber-red hover:text-white transition-colors" title="Lock Signal">
+                        <i class="fa-solid fa-street-view text-sm"></i>
                     </button>
-                    <button onclick="app.pointTrueNorthUnitMap()" class="bg-lcars-panel border border-lcars-blue/60 text-lcars-blue h-10 w-10 rounded-xl flex items-center justify-center shadow-lg hover:bg-lcars-blue hover:text-black transition-colors" title="Point True North">
+                    <button onclick="app.pointTrueNorthUnitMap()" class="bg-cyber-panel border border-cyber-blue/60 text-cyber-blue h-10 w-10 flex items-center justify-center shadow-[0_0_10px_rgba(0,82,165,0.3)] hover:bg-cyber-blue hover:text-white transition-colors" title="Align True North">
                         <i class="fa-solid fa-compass text-sm"></i>
                     </button>
                 </div>
 
-                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[400] lcars-panel px-4 py-2 rounded-2xl border border-lcars-gold/50 pointer-events-none text-center shadow-lg w-[90%] max-w-sm">
-                    <p id="nav-instruction-label" class="text-[9px] font-lcars text-lcars-blue tracking-widest uppercase mb-0.5">NAVIGATION: STANDBY</p>
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[400] bg-cyber-panel/90 px-4 py-2 border border-cyber-accent/50 pointer-events-none text-center shadow-[0_0_15px_rgba(255,199,44,0.2)] w-[90%] max-w-sm backdrop-blur-md" style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">
+                    <p id="nav-instruction-label" class="text-[9px] font-cyber text-cyber-silver tracking-widest uppercase mb-0.5">GROUNDBRIDGE: STANDBY</p>
                     <div class="flex gap-2 items-center justify-center text-xs">
-                        <p id="u-coords-display" class="font-lcars text-lcars-gold font-bold truncate">ACQUIRING FIX...</p>
-                        <span class="text-gray-600">|</span>
-                        <p id="u-speed-display" class="font-lcars text-lcars-blue font-bold shrink-0">0.0 km/h</p>
+                        <p id="u-coords-display" class="font-cyber text-cyber-neon font-bold truncate tracking-wider">SCANNING SECTOR...</p>
+                        <span class="text-cyber-silver/50">|</span>
+                        <p id="u-speed-display" class="font-cyber text-cyber-accent font-bold shrink-0 tracking-wider">0.0 km/h</p>
                     </div>
                 </div>
             </div>
 
             <!-- Unit COMMS View -->
-            <div id="unit-view-comms" class="hidden flex-1 flex-col bg-black relative border-t-2 border-lcars-panel">
-                <div class="flex bg-lcars-panel shrink-0 font-lcars tracking-wider uppercase text-[10px]">
-                    <button onclick="app.switchUnitChatTab('private')" id="u-chat-tab-private" class="flex-1 py-2 border-b border-lcars-blue text-lcars-blue transition-colors bg-lcars-blue/10"><i class="fa-solid fa-headset mr-1"></i>Command Channel</button>
-                    <button onclick="app.switchUnitChatTab('group')" id="u-chat-tab-group" class="flex-1 py-2 border-b border-transparent text-gray-400 hover:text-white transition-colors"><i class="fa-solid fa-broadcast-tower mr-1"></i>Fleet Broadcast</button>
+            <div id="unit-view-comms" class="hidden flex-1 flex-col bg-black relative border-t-4 border-cyber-panel">
+                <div class="flex bg-cyber-panel shrink-0 font-cyber tracking-widest uppercase text-[9px]">
+                    <button onclick="app.switchUnitChatTab('private')" id="u-chat-tab-private" class="flex-1 py-2.5 border-b border-cyber-neon text-cyber-neon transition-colors bg-cyber-neon/10"><i class="fa-solid fa-lock mr-1"></i>Prime Channel</button>
+                    <button onclick="app.switchUnitChatTab('group')" id="u-chat-tab-group" class="flex-1 py-2.5 border-b border-transparent text-cyber-silver hover:text-white transition-colors"><i class="fa-solid fa-tower-broadcast mr-1"></i>Open Frequency</button>
                 </div>
 
-                <div id="unit-chat-messages" class="flex-1 overflow-y-auto p-3 space-y-3 scroll-smooth text-sm"></div>
+                <div id="unit-chat-messages" class="flex-1 overflow-y-auto p-3 space-y-3 scroll-smooth text-sm bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
                 
-                <form id="unit-chat-form" class="p-2.5 bg-black border-t border-lcars-surface flex gap-2 shrink-0 items-center">
-                    <button type="button" onclick="document.getElementById('unit-file-upload').click()" class="bg-lcars-panel text-lcars-gold h-10 w-10 rounded-xl flex items-center justify-center transition-colors border border-lcars-gold/30 shrink-0">
+                <form id="unit-chat-form" class="p-2 bg-black border-t border-cyber-silver/20 flex gap-2 shrink-0 items-center shadow-[0_-5px_15px_rgba(0,0,0,0.5)]">
+                    <button type="button" onclick="document.getElementById('unit-file-upload').click()" class="bg-cyber-panel text-cyber-accent h-10 w-10 flex items-center justify-center transition-colors border border-cyber-accent/30 shrink-0 hover:bg-cyber-accent hover:text-black">
                         <i class="fa-solid fa-paperclip text-sm"></i>
                     </button>
-                    <button type="button" id="unit-mic-btn" onclick="app.toggleRecording('unit')" class="bg-lcars-panel text-lcars-blue h-10 w-10 rounded-xl flex items-center justify-center transition-colors border border-lcars-blue/30 shrink-0">
+                    <button type="button" id="unit-mic-btn" onclick="app.toggleRecording('unit')" class="bg-cyber-panel text-cyber-neon h-10 w-10 flex items-center justify-center transition-colors border border-cyber-neon/30 shrink-0 hover:bg-cyber-neon hover:text-black">
                         <i class="fa-solid fa-microphone text-sm"></i>
                     </button>
-                    <input type="text" id="unit-message-input" autocomplete="off" placeholder="TRANSMIT MESSAGE..." class="flex-1 bg-lcars-panel border border-lcars-gold/40 rounded-xl px-3.5 py-2 text-lcars-blue font-lcars text-xs focus:outline-none focus:border-lcars-gold">
-                    <button type="submit" class="lcars-button px-4 h-10 text-xs shrink-0 flex items-center justify-center">
+                    <input type="text" id="unit-message-input" autocomplete="off" placeholder="TRANSMIT DATA..." class="flex-1 bg-cyber-panel border border-cyber-red/40 px-3 py-2 text-white font-cyber text-[10px] tracking-wider focus:outline-none focus:border-cyber-red">
+                    <button type="submit" class="cyber-button px-4 h-10 text-[10px] shrink-0 flex items-center justify-center">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
                     <input type="file" id="unit-file-upload" accept="video/*, image/*" class="hidden" onchange="app.handleFileUpload(event, 'unit')">
@@ -345,59 +357,59 @@
 
         <!-- Admin Dashboard -->
         <div id="admin-screen" class="hidden h-full w-full flex flex-col z-10">
-            <div class="bg-black flex border-b border-lcars-blue/30 shrink-0 overflow-x-auto font-lcars tracking-wider uppercase text-xs">
-                <button onclick="app.switchAdminTab('dashboard')" id="admin-tab-dashboard" class="flex-1 py-2.5 px-3 border-b-2 border-lcars-blue text-lcars-blue bg-lcars-blue/10 whitespace-nowrap transition-colors"><i class="fa-solid fa-radar mr-1.5"></i>Fleet Radar</button>
-                <button onclick="app.switchAdminTab('analytics')" id="admin-tab-analytics" class="flex-1 py-2.5 px-3 border-b-2 border-transparent text-gray-400 hover:text-white whitespace-nowrap transition-colors"><i class="fa-solid fa-chart-line mr-1.5"></i>Fleet Analytics</button>
-                <button onclick="app.switchAdminTab('manage')" id="admin-tab-manage" class="flex-1 py-2.5 px-3 border-b-2 border-transparent text-gray-400 hover:text-white whitespace-nowrap transition-colors"><i class="fa-solid fa-shuttle-space mr-1.5"></i>Vessel Roster</button>
-                <button onclick="app.switchAdminTab('settings')" id="admin-tab-settings" class="flex-1 py-2.5 px-3 border-b-2 border-transparent text-gray-400 hover:text-white whitespace-nowrap transition-colors"><i class="fa-solid fa-shield-halved mr-1.5"></i>Security Protocols</button>
+            <div class="bg-black flex border-b border-cyber-blue/50 shrink-0 overflow-x-auto font-cyber tracking-widest uppercase text-[9px]">
+                <button onclick="app.switchAdminTab('dashboard')" id="admin-tab-dashboard" class="flex-1 py-3 px-3 border-b-2 border-cyber-blue text-cyber-blue bg-cyber-blue/10 whitespace-nowrap transition-colors"><i class="fa-solid fa-radar mr-1.5"></i>Global Grid</button>
+                <button onclick="app.switchAdminTab('analytics')" id="admin-tab-analytics" class="flex-1 py-3 px-3 border-b-2 border-transparent text-cyber-silver hover:text-white whitespace-nowrap transition-colors"><i class="fa-solid fa-chart-line mr-1.5"></i>Diagnostics</button>
+                <button onclick="app.switchAdminTab('manage')" id="admin-tab-manage" class="flex-1 py-3 px-3 border-b-2 border-transparent text-cyber-silver hover:text-white whitespace-nowrap transition-colors"><i class="fa-solid fa-users-gear mr-1.5"></i>Operatives</button>
+                <button onclick="app.switchAdminTab('settings')" id="admin-tab-settings" class="flex-1 py-3 px-3 border-b-2 border-transparent text-cyber-silver hover:text-white whitespace-nowrap transition-colors"><i class="fa-solid fa-shield-halved mr-1.5"></i>Protocols</button>
             </div>
 
             <!-- Tab 1: Live Dashboard -->
             <div id="admin-view-dashboard" class="flex-1 flex flex-col lg:flex-row relative overflow-hidden bg-black">
-                <div class="flex-1 h-[55vh] lg:h-full relative border-b lg:border-b-0 lg:border-r border-lcars-blue/20">
+                <div class="flex-1 h-[55vh] lg:h-full relative border-b lg:border-b-0 lg:border-r border-cyber-blue/30">
                     <div id="admin-map"></div>
                     
-                    <!-- Admin Map Control Overlay Buttons (Recenter & True North) -->
+                    <!-- Admin Map Control Overlay -->
                     <div class="absolute top-3 right-3 z-[400] flex flex-col gap-2">
-                        <button onclick="app.recenterAdminMap()" class="bg-lcars-panel border border-lcars-blue/60 text-lcars-blue h-10 w-10 rounded-xl flex items-center justify-center shadow-lg hover:bg-lcars-blue hover:text-black transition-colors" title="Recenter Command View">
+                        <button onclick="app.recenterAdminMap()" class="bg-cyber-panel border border-cyber-blue/60 text-cyber-neon h-10 w-10 flex items-center justify-center shadow-[0_0_10px_rgba(0,255,255,0.3)] hover:bg-cyber-neon hover:text-black transition-colors" title="Recenter Grid">
                             <i class="fa-solid fa-crosshairs text-sm"></i>
                         </button>
-                        <button onclick="app.pointTrueNorthAdminMap()" class="bg-lcars-panel border border-lcars-gold/60 text-lcars-gold h-10 w-10 rounded-xl flex items-center justify-center shadow-lg hover:bg-lcars-gold hover:text-black transition-colors" title="Point True North">
+                        <button onclick="app.pointTrueNorthAdminMap()" class="bg-cyber-panel border border-cyber-accent/60 text-cyber-accent h-10 w-10 flex items-center justify-center shadow-[0_0_10px_rgba(255,199,44,0.3)] hover:bg-cyber-accent hover:text-black transition-colors" title="Align True North">
                             <i class="fa-solid fa-compass text-sm"></i>
                         </button>
                     </div>
 
-                    <div class="absolute top-3 left-3 z-[400] lcars-panel px-3 py-2 rounded-2xl border border-lcars-blue/30 pointer-events-none shadow-lg">
-                        <p class="text-[9px] font-lcars text-lcars-purple tracking-widest uppercase">Active Vessels</p>
-                        <div class="flex items-baseline gap-1.5">
-                            <p id="active-units-count" class="text-2xl font-lcars font-bold text-lcars-gold">0</p>
-                            <span class="relative flex h-2 w-2">
-                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-lcars-gold opacity-75"></span>
-                              <span class="relative inline-flex rounded-full h-2 w-2 bg-lcars-gold"></span>
+                    <div class="absolute top-3 left-3 z-[400] bg-cyber-panel/90 px-3 py-2 border border-cyber-blue/50 pointer-events-none shadow-[0_0_15px_rgba(0,82,165,0.3)] backdrop-blur-md" style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">
+                        <p class="text-[8px] font-cyber text-cyber-neon tracking-widest uppercase">Active Signals</p>
+                        <div class="flex items-baseline gap-2">
+                            <p id="active-units-count" class="text-xl font-cyber font-bold text-white">0</p>
+                            <span class="relative flex h-1.5 w-1.5">
+                              <span class="animate-ping absolute inline-flex h-full w-full bg-cyber-neon opacity-75"></span>
+                              <span class="relative inline-flex h-1.5 w-1.5 bg-cyber-neon"></span>
                             </span>
                         </div>
                     </div>
                 </div>
 
                 <div class="w-full lg:w-[380px] h-[45vh] lg:h-full flex flex-col shrink-0 bg-black">
-                    <div class="p-3 border-b border-lcars-surface shrink-0 lcars-panel relative overflow-hidden" style="border-left-color: #99CCFF;">
-                        <h3 class="font-lcars text-lcars-blue text-sm uppercase font-bold mb-2 relative z-10"><i class="fa-solid fa-tower-broadcast mr-1.5"></i>Command Dispatch Comms</h3>
-                        <select id="admin-chat-select" onchange="app.switchAdminChat(this.value)" class="relative z-10 bg-black text-lcars-gold font-lcars tracking-wider text-xs rounded-xl px-3 py-2 border border-lcars-blue/50 focus:outline-none w-full appearance-none">
-                            <option value="group">📢 ALL FLEET BROADCAST</option>
+                    <div class="p-3 border-b border-cyber-surface shrink-0 cyber-panel cyber-panel-blue relative overflow-hidden">
+                        <h3 class="font-cyber text-cyber-neon text-[11px] uppercase font-bold mb-2 tracking-widest"><i class="fa-solid fa-satellite mr-1.5"></i>Comms Override</h3>
+                        <select id="admin-chat-select" onchange="app.switchAdminChat(this.value)" class="bg-black text-cyber-silver font-cyber tracking-widest text-[9px] px-3 py-2 border border-cyber-blue/50 focus:outline-none focus:border-cyber-neon w-full appearance-none">
+                            <option value="group">📢 GLOBAL BROADCAST</option>
                         </select>
                     </div>
                     
-                    <div id="admin-chat-messages" class="flex-1 overflow-y-auto p-3 space-y-3 scroll-smooth text-sm"></div>
+                    <div id="admin-chat-messages" class="flex-1 overflow-y-auto p-3 space-y-3 scroll-smooth text-sm bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
                     
-                    <form id="admin-chat-form" class="p-2.5 bg-black border-t border-lcars-surface flex gap-2 shrink-0 items-center">
-                        <button type="button" onclick="document.getElementById('admin-file-upload').click()" class="bg-lcars-panel text-lcars-blue h-10 w-10 rounded-xl flex items-center justify-center transition-colors border border-lcars-blue/30 shrink-0">
+                    <form id="admin-chat-form" class="p-2.5 bg-black border-t border-cyber-surface flex gap-2 shrink-0 items-center">
+                        <button type="button" onclick="document.getElementById('admin-file-upload').click()" class="bg-cyber-panel text-cyber-neon h-10 w-10 flex items-center justify-center border border-cyber-neon/30 shrink-0 hover:bg-cyber-neon hover:text-black">
                             <i class="fa-solid fa-paperclip text-xs"></i>
                         </button>
-                        <button type="button" id="admin-mic-btn" onclick="app.toggleRecording('admin')" class="bg-lcars-panel text-lcars-gold h-10 w-10 rounded-xl flex items-center justify-center transition-colors border border-lcars-gold/30 shrink-0">
+                        <button type="button" id="admin-mic-btn" onclick="app.toggleRecording('admin')" class="bg-cyber-panel text-cyber-accent h-10 w-10 flex items-center justify-center border border-cyber-accent/30 shrink-0 hover:bg-cyber-accent hover:text-black">
                             <i class="fa-solid fa-microphone text-xs"></i>
                         </button>
-                        <input type="text" id="admin-message-input" autocomplete="off" placeholder="TRANSMIT DISPATCH..." class="flex-1 bg-lcars-panel border border-lcars-blue/40 rounded-xl px-3 py-2 text-lcars-gold font-lcars text-xs focus:outline-none">
-                        <button type="submit" class="lcars-button-blue px-4 h-10 text-xs shrink-0 flex items-center justify-center">
+                        <input type="text" id="admin-message-input" autocomplete="off" placeholder="TRANSMIT DIRECTIVE..." class="flex-1 bg-cyber-panel border border-cyber-blue/40 px-3 py-2 text-white font-cyber text-[9px] tracking-widest focus:outline-none focus:border-cyber-neon">
+                        <button type="submit" class="cyber-button-blue px-4 h-10 text-xs shrink-0 flex items-center justify-center">
                             <i class="fa-solid fa-paper-plane"></i>
                         </button>
                         <input type="file" id="admin-file-upload" accept="video/*, image/*" class="hidden" onchange="app.handleFileUpload(event, 'admin')">
@@ -406,75 +418,75 @@
             </div>
 
             <!-- Tab 2: Fleet Performance Analytics -->
-            <div id="admin-view-analytics" class="hidden flex-1 overflow-y-auto p-4 space-y-4 bg-black relative font-lcars">
+            <div id="admin-view-analytics" class="hidden flex-1 overflow-y-auto p-4 space-y-4 bg-black relative font-cyber">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div class="lcars-panel p-4 rounded-2xl border border-lcars-blue/30" style="border-left-color: #99CCFF;">
-                        <p class="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Total Commissioned</p>
-                        <p id="analytics-total-vessels" class="text-2xl font-bold text-lcars-blue">0</p>
+                    <div class="bg-cyber-panel p-4 border-l-4 border-cyber-blue shadow-[0_0_10px_rgba(0,82,165,0.1)]">
+                        <p class="text-[8px] text-cyber-silver uppercase tracking-widest mb-1">Total Operatives</p>
+                        <p id="analytics-total-vessels" class="text-2xl font-bold text-white">0</p>
                     </div>
-                    <div class="lcars-panel p-4 rounded-2xl border border-lcars-gold/30">
-                        <p class="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Active in Transit</p>
-                        <p id="analytics-active-transit" class="text-2xl font-bold text-lcars-gold">0</p>
+                    <div class="bg-cyber-panel p-4 border-l-4 border-cyber-accent shadow-[0_0_10px_rgba(255,199,44,0.1)]">
+                        <p class="text-[8px] text-cyber-silver uppercase tracking-widest mb-1">Active / Rolling</p>
+                        <p id="analytics-active-transit" class="text-2xl font-bold text-cyber-accent">0</p>
                     </div>
-                    <div class="lcars-panel p-4 rounded-2xl border border-lcars-orange/30">
-                        <p class="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Docked / Pit Stop</p>
-                        <p id="analytics-docked" class="text-2xl font-bold text-lcars-orange">0</p>
+                    <div class="bg-cyber-panel p-4 border-l-4 border-cyber-neon shadow-[0_0_10px_rgba(0,255,255,0.1)]">
+                        <p class="text-[8px] text-cyber-silver uppercase tracking-widest mb-1">Recharging</p>
+                        <p id="analytics-docked" class="text-2xl font-bold text-cyber-neon">0</p>
                     </div>
-                    <div class="lcars-panel p-4 rounded-2xl border border-lcars-red/30">
-                        <p class="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Red Alerts / SOS</p>
-                        <p id="analytics-sos" class="text-2xl font-bold text-lcars-red">0</p>
+                    <div class="bg-cyber-panel p-4 border-l-4 border-cyber-red shadow-[0_0_10px_rgba(224,22,43,0.1)]">
+                        <p class="text-[8px] text-cyber-silver uppercase tracking-widest mb-1">Critical Damage</p>
+                        <p id="analytics-sos" class="text-2xl font-bold text-cyber-red">0</p>
                     </div>
                 </div>
 
-                <div class="lcars-panel p-5 rounded-3xl border border-lcars-blue/30 mt-4" style="border-left-color: #99CCFF;">
-                    <h3 class="text-base font-lcars text-lcars-blue font-bold mb-3 uppercase"><i class="fa-solid fa-chart-pie mr-1.5"></i>Fleet Telemetry Summary</h3>
-                    <div class="space-y-3 text-xs text-gray-300">
-                        <div class="flex justify-between border-b border-lcars-surface pb-2">
-                            <span>Average Fleet Speed:</span>
-                            <span id="analytics-avg-speed" class="text-lcars-gold font-bold">0.0 km/h</span>
+                <div class="cyber-panel cyber-panel-blue p-5 mt-4">
+                    <h3 class="text-sm font-cyber text-cyber-neon font-bold mb-4 uppercase tracking-widest"><i class="fa-solid fa-microchip mr-1.5"></i>System Diagnostics</h3>
+                    <div class="space-y-3 text-[10px] text-cyber-silver tracking-wider">
+                        <div class="flex justify-between border-b border-cyber-surface pb-2">
+                            <span>Average Sector Velocity:</span>
+                            <span id="analytics-avg-speed" class="text-white font-bold">0.0 km/h</span>
                         </div>
-                        <div class="flex justify-between border-b border-lcars-surface pb-2">
-                            <span>Subspace Connection Stability:</span>
-                            <span class="text-green-400 font-bold">OPTIMAL (100%)</span>
+                        <div class="flex justify-between border-b border-cyber-surface pb-2">
+                            <span>Teletraan-1 Sync:</span>
+                            <span class="text-cyber-neon font-bold">100% OPTIMAL</span>
                         </div>
                         <div class="flex justify-between pb-1">
-                            <span>Central Databank Sync:</span>
-                            <span class="text-lcars-blue font-bold">FIREBASE REALTIME ACTIVE</span>
+                            <span>Data Core:</span>
+                            <span class="text-cyber-blue font-bold">ONLINE</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Tab 3: Manage Units -->
-            <div id="admin-view-manage" class="hidden flex-1 overflow-y-auto p-4 space-y-6 bg-black relative font-lcars">
-                <div class="lcars-panel p-4 rounded-3xl border border-lcars-blue/30 relative overflow-hidden" style="border-left-color: #99CCFF;">
-                    <h3 class="text-base font-lcars text-lcars-blue font-bold mb-3 uppercase relative z-10"><i class="fa-solid fa-plus mr-1.5"></i>Commission Vessel</h3>
+            <div id="admin-view-manage" class="hidden flex-1 overflow-y-auto p-4 space-y-6 bg-black relative font-cyber">
+                <div class="cyber-panel cyber-panel-blue p-4 relative overflow-hidden shadow-[0_0_15px_rgba(0,82,165,0.1)]">
+                    <h3 class="text-sm text-white font-bold mb-4 uppercase tracking-widest"><i class="fa-solid fa-user-plus mr-1.5 text-cyber-blue"></i>Activate Operative</h3>
                     
                     <div class="grid grid-cols-1 gap-3 relative z-10 text-xs">
                         <div>
-                            <label class="block text-[9px] text-lcars-gold mb-1 tracking-wider uppercase">Vessel Callsign *</label>
-                            <input type="text" id="add-unit-name" placeholder="e.g. VOYAGER" class="w-full bg-black border border-lcars-blue/50 rounded-xl px-3 py-2 text-lcars-gold uppercase focus:outline-none text-sm">
+                            <label class="block text-[8px] text-cyber-silver mb-1 tracking-widest uppercase">Designation *</label>
+                            <input type="text" id="add-unit-name" placeholder="e.g. BUMBLEBEE" class="w-full bg-black border border-cyber-blue/50 px-3 py-2 text-white uppercase focus:outline-none focus:border-cyber-neon text-xs tracking-wider">
                         </div>
                         <div>
-                            <label class="block text-[9px] text-lcars-gold mb-1 tracking-wider uppercase">Access Code *</label>
-                            <input type="text" id="add-unit-pin" placeholder="e.g. 1701" class="w-full bg-black border border-lcars-blue/50 rounded-xl px-3 py-2 text-lcars-gold focus:outline-none text-sm">
+                            <label class="block text-[8px] text-cyber-silver mb-1 tracking-widest uppercase">Spark Code *</label>
+                            <input type="text" id="add-unit-pin" placeholder="e.g. 1984" class="w-full bg-black border border-cyber-blue/50 px-3 py-2 text-white focus:outline-none focus:border-cyber-neon text-xs tracking-wider">
                         </div>
                         <div>
-                            <label class="block text-[9px] text-lcars-gold mb-1 tracking-wider uppercase">Vessel Crest / Insignia</label>
-                            <input type="file" id="add-unit-photo" accept="image/*" class="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-3 file:border-0 file:bg-lcars-blue file:text-black file:font-bold file:rounded-xl cursor-pointer">
+                            <label class="block text-[8px] text-cyber-silver mb-1 tracking-widest uppercase">Insignia / Scan</label>
+                            <input type="file" id="add-unit-photo" accept="image/*" class="w-full text-[10px] text-cyber-silver file:mr-3 file:py-1.5 file:px-3 file:border-0 file:bg-cyber-blue file:text-white file:font-bold file:uppercase cursor-pointer">
                         </div>
                     </div>
-                    <div class="mt-4 flex justify-end relative z-10">
-                        <button onclick="app.createNewUnitManual()" class="w-full lcars-button-blue py-3 font-lcars text-base tracking-widest shadow-md">
-                            COMMISSION VESSEL <i class="fa-solid fa-check ml-1"></i>
+                    <div class="mt-5 flex justify-end">
+                        <button onclick="app.createNewUnitManual()" class="w-full cyber-button-blue py-3 text-[11px] tracking-widest shadow-md">
+                            INITIALIZE SPARK <i class="fa-solid fa-bolt ml-1"></i>
                         </button>
                     </div>
                 </div>
 
                 <div>
-                    <div class="flex justify-between items-center mb-3 border-b border-lcars-surface pb-1.5">
-                        <h3 class="text-sm font-lcars text-lcars-gold uppercase font-bold"><i class="fa-solid fa-shuttle-space mr-1.5"></i>Active Fleet Registry</h3>
-                        <span id="registered-units-count" class="text-[10px] tracking-widest bg-lcars-panel px-3 py-1 rounded-full text-lcars-blue border border-lcars-blue/40">0 VESSELS</span>
+                    <div class="flex justify-between items-center mb-3 border-b border-cyber-surface pb-1.5">
+                        <h3 class="text-xs font-cyber text-cyber-accent uppercase font-bold tracking-widest"><i class="fa-solid fa-list-ol mr-1.5"></i>Roster</h3>
+                        <span id="registered-units-count" class="text-[9px] tracking-widest bg-cyber-panel px-2 py-1 text-white border border-cyber-accent/40">0 ONLINE</span>
                     </div>
                     <div class="grid grid-cols-1 gap-3" id="manage-units-grid"></div>
                 </div>
@@ -482,19 +494,19 @@
 
             <!-- Tab 4: Security Settings -->
             <div id="admin-view-settings" class="hidden flex-1 overflow-y-auto p-4 relative flex justify-center items-center bg-black">
-                <div class="lcars-panel p-6 rounded-3xl max-w-sm w-full border border-lcars-blue/30 shadow-2xl" style="border-left-color: #99CCFF;">
-                    <h2 class="text-base font-lcars text-lcars-blue font-bold mb-4 uppercase tracking-wider"><i class="fa-solid fa-shield-halved mr-1.5"></i>Command Security</h2>
-                    <div class="space-y-3 font-lcars text-xs">
+                <div class="cyber-panel cyber-panel-blue p-6 max-w-sm w-full shadow-[0_0_20px_rgba(0,82,165,0.15)]">
+                    <h2 class="text-sm font-cyber text-white font-bold mb-5 uppercase tracking-widest"><i class="fa-solid fa-lock text-cyber-blue mr-1.5"></i>Override Protocol</h2>
+                    <div class="space-y-4 font-cyber text-xs">
                         <div>
-                            <label class="block text-[9px] text-lcars-gold mb-1 tracking-wider uppercase">New Master Code</label>
-                            <input type="password" id="new-password" class="w-full bg-black border border-lcars-blue/50 rounded-xl px-3 py-2 text-lcars-gold focus:outline-none text-sm">
+                            <label class="block text-[8px] text-cyber-silver mb-1 tracking-widest uppercase">New Matrix Code</label>
+                            <input type="password" id="new-password" class="w-full bg-black border border-cyber-blue/50 px-3 py-2 text-white focus:outline-none focus:border-cyber-neon tracking-widest">
                         </div>
                         <div>
-                            <label class="block text-[9px] text-lcars-gold mb-1 tracking-wider uppercase">Confirm Master Code</label>
-                            <input type="password" id="confirm-password" class="w-full bg-black border border-lcars-blue/50 rounded-xl px-3 py-2 text-lcars-gold focus:outline-none text-sm">
+                            <label class="block text-[8px] text-cyber-silver mb-1 tracking-widest uppercase">Confirm Matrix Code</label>
+                            <input type="password" id="confirm-password" class="w-full bg-black border border-cyber-blue/50 px-3 py-2 text-white focus:outline-none focus:border-cyber-neon tracking-widest">
                         </div>
-                        <button onclick="app.updateAdminPassword()" class="w-full lcars-button-blue py-3 text-base tracking-widest mt-4">
-                            UPDATE MASTER KEY
+                        <button onclick="app.updateAdminPassword()" class="w-full cyber-button-blue py-3 text-[11px] tracking-widest mt-4">
+                            UPDATE PROTOCOL
                         </button>
                     </div>
                 </div>
@@ -503,52 +515,52 @@
 
         <!-- Custom Modals -->
         <div id="custom-alert" class="hidden fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="lcars-panel p-6 rounded-3xl max-w-xs w-full text-center border-2 border-lcars-gold shadow-2xl animate-slide-up">
-                <h3 class="text-base font-lcars text-lcars-blue font-bold uppercase tracking-wider mb-2" id="alert-title">NOTICE</h3>
-                <p class="text-lcars-gold font-lcars mb-5 text-xs tracking-wide" id="alert-message">Message</p>
-                <button onclick="document.getElementById('custom-alert').classList.add('hidden')" class="lcars-button w-full py-2.5 text-sm tracking-widest">
+            <div class="bg-black border-2 border-cyber-accent p-6 max-w-xs w-full text-center shadow-[0_0_30px_rgba(255,199,44,0.3)] animate-slide-up" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+                <h3 class="text-sm font-cyber text-white font-bold uppercase tracking-widest mb-2 border-b border-cyber-accent pb-2" id="alert-title">SYSTEM ALERT</h3>
+                <p class="text-cyber-silver font-cyber mb-5 text-[10px] tracking-widest uppercase" id="alert-message">Message</p>
+                <button onclick="document.getElementById('custom-alert').classList.add('hidden')" class="bg-cyber-accent text-black font-cyber font-bold w-full py-2.5 text-[11px] tracking-widest hover:bg-white transition-colors uppercase">
                     ACKNOWLEDGE
                 </button>
             </div>
         </div>
 
         <div id="edit-unit-modal" class="hidden fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="lcars-panel p-5 rounded-3xl max-w-sm w-full border-2 border-lcars-blue relative animate-slide-up" style="border-left-color: #99CCFF;">
-                <button onclick="document.getElementById('edit-unit-modal').classList.add('hidden')" class="absolute top-3 right-3 text-lcars-blue p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
-                <h3 class="text-base font-lcars text-lcars-gold font-bold uppercase mb-4 border-b border-lcars-surface pb-2"><i class="fa-solid fa-pen-to-square mr-1.5"></i>Configure Vessel</h3>
+            <div class="cyber-panel cyber-panel-blue p-5 max-w-sm w-full relative animate-slide-up shadow-[0_0_30px_rgba(0,82,165,0.3)]">
+                <button onclick="document.getElementById('edit-unit-modal').classList.add('hidden')" class="absolute top-3 right-3 text-cyber-silver hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <h3 class="text-sm font-cyber text-white font-bold uppercase mb-4 border-b border-cyber-surface pb-2 tracking-widest"><i class="fa-solid fa-wrench text-cyber-blue mr-1.5"></i>Upgrade Operative</h3>
                 <input type="hidden" id="edit-unit-id">
                 
-                <div class="space-y-3 font-lcars text-xs">
-                    <div class="flex items-center gap-3 bg-black p-2.5 rounded-xl border border-lcars-surface">
-                        <div id="edit-unit-photo-preview" class="h-12 w-12 bg-lcars-surface border border-lcars-blue rounded-xl flex items-center justify-center overflow-hidden font-lcars font-bold text-base text-lcars-gold shrink-0"></div>
+                <div class="space-y-4 font-cyber text-xs">
+                    <div class="flex items-center gap-3 bg-black p-2.5 border border-cyber-surface">
+                        <div id="edit-unit-photo-preview" class="h-12 w-12 bg-cyber-panel border border-cyber-blue flex items-center justify-center overflow-hidden font-cyber font-bold text-base text-white shrink-0"></div>
                         <div class="flex-1 overflow-hidden">
-                            <label class="block text-[9px] text-lcars-gold mb-1 tracking-wider uppercase">Insignia</label>
-                            <input type="file" id="edit-unit-photo" accept="image/*" class="w-full text-[10px] text-gray-400 file:mr-1 file:py-1 file:px-2 file:border-0 file:bg-lcars-surface file:text-lcars-blue file:rounded-lg cursor-pointer">
+                            <label class="block text-[8px] text-cyber-silver mb-1 tracking-widest uppercase">New Scan</label>
+                            <input type="file" id="edit-unit-photo" accept="image/*" class="w-full text-[9px] text-cyber-silver file:mr-1 file:py-1 file:px-2 file:border-0 file:bg-cyber-surface file:text-white cursor-pointer uppercase">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-[9px] text-lcars-gold mb-1 tracking-wider uppercase">Callsign</label>
-                        <input type="text" id="edit-unit-name" class="w-full bg-black border border-lcars-blue/50 rounded-xl px-3 py-2 text-lcars-gold uppercase focus:outline-none text-sm">
+                        <label class="block text-[8px] text-cyber-silver mb-1 tracking-widest uppercase">Designation</label>
+                        <input type="text" id="edit-unit-name" class="w-full bg-black border border-cyber-blue/50 px-3 py-2 text-white uppercase focus:outline-none tracking-wider text-[11px]">
                     </div>
                     <div>
-                        <label class="block text-[9px] text-lcars-gold mb-1 tracking-wider uppercase">Access Code</label>
-                        <input type="text" id="edit-unit-pin" class="w-full bg-black border border-lcars-blue/50 rounded-xl px-3 py-2 text-lcars-gold focus:outline-none text-sm">
+                        <label class="block text-[8px] text-cyber-silver mb-1 tracking-widest uppercase">Spark Code</label>
+                        <input type="text" id="edit-unit-pin" class="w-full bg-black border border-cyber-blue/50 px-3 py-2 text-white focus:outline-none tracking-wider text-[11px]">
                     </div>
                     <div>
-                        <label class="block text-[9px] text-lcars-gold mb-1 tracking-wider uppercase">Tactical Status</label>
-                        <select id="edit-unit-status" class="w-full bg-black border border-lcars-blue/50 rounded-xl px-3 py-2 text-lcars-gold uppercase focus:outline-none text-sm">
-                            <option value="in_transit">WARP / TRANSIT</option>
-                            <option value="pit_stop">DOCKING BAY</option>
-                            <option value="delayed">COURSE DEVIATION</option>
-                            <option value="breakdown">CRITICAL STATUS</option>
+                        <label class="block text-[8px] text-cyber-silver mb-1 tracking-widest uppercase">Status Directive</label>
+                        <select id="edit-unit-status" class="w-full bg-black border border-cyber-blue/50 px-3 py-2 text-white uppercase focus:outline-none tracking-wider text-[10px]">
+                            <option value="in_transit">ROLLING OUT</option>
+                            <option value="pit_stop">RECHARGING</option>
+                            <option value="delayed">REROUTING</option>
+                            <option value="breakdown">CRITICAL DAMAGE</option>
                         </select>
                     </div>
-                    <div class="pt-3 flex gap-2">
-                        <button onclick="app.deleteUnit()" class="bg-lcars-red/20 text-lcars-red border border-lcars-red/50 hover:bg-lcars-red hover:text-white py-2 px-3 rounded-xl transition-colors text-xs shrink-0 font-bold">
-                            <i class="fa-solid fa-trash"></i>
+                    <div class="pt-2 flex gap-2">
+                        <button onclick="app.deleteUnit()" class="bg-black text-cyber-red border border-cyber-red hover:bg-cyber-red hover:text-white py-2 px-3 transition-colors text-sm shrink-0">
+                            <i class="fa-solid fa-trash-can"></i>
                         </button>
-                        <button onclick="app.saveUnitEdit()" class="flex-1 lcars-button-blue py-2.5 text-sm tracking-widest">
-                            APPLY MODS
+                        <button onclick="app.saveUnitEdit()" class="flex-1 cyber-button-blue py-2.5 text-[11px] tracking-widest">
+                            APPLY UPGRADE
                         </button>
                     </div>
                 </div>
@@ -575,9 +587,9 @@
 
         const updateStatus = (text, isError = false) => {
             const ind = document.getElementById('status-indicator');
-            const color = isError ? 'text-lcars-red' : 'text-lcars-gold';
-            ind.innerHTML = `<i class="fa-solid fa-circle text-[7px] mr-1.5 ${color} ${!isError ? 'animate-pulse' : ''}"></i> <span class="${color}">${text}</span>`;
-            ind.className = `font-lcars text-xs bg-lcars-panel border px-3 py-1 rounded-full flex items-center shadow-md relative z-10 ${isError ? 'border-lcars-red text-lcars-red' : 'border-lcars-gold/50 text-lcars-gold'}`;
+            const color = isError ? 'text-cyber-red border-cyber-red shadow-[0_0_10px_rgba(224,22,43,0.4)]' : 'text-cyber-accent border-cyber-accent/40 shadow-[0_0_8px_rgba(255,199,44,0.3)]';
+            ind.innerHTML = `<i class="fa-solid fa-square text-[6px] mr-1.5 ${!isError ? 'animate-pulse' : ''}"></i> <span>${text}</span>`;
+            ind.className = `font-cyber text-[10px] bg-cyber-panel border px-3 py-1 flex items-center relative z-10 ${color}`;
         };
 
         const showScreen = (screenId) => {
@@ -635,14 +647,14 @@
                 const err = document.getElementById('setup-error');
                 
                 if (!nameInput || !pinInput) {
-                    err.innerText = "ACCESS DENIED: MISSING CREDENTIALS"; err.classList.remove('hidden'); return;
+                    err.innerText = "DENIED: DATA MISSING"; err.classList.remove('hidden'); return;
                 }
 
                 let existingUnitId = null;
                 for (const [id, unit] of Object.entries(app.unitsList)) {
                     if (unit.name.toUpperCase() === nameInput) {
                         if (unit.pin && unit.pin !== pinInput) {
-                            err.innerText = "ACCESS DENIED: INVALID SECURITY CODE"; err.classList.remove('hidden'); return;
+                            err.innerText = "DENIED: INVALID SPARK CODE"; err.classList.remove('hidden'); return;
                         }
                         existingUnitId = id;
                         break;
@@ -672,10 +684,10 @@
                 const pwd = document.getElementById('admin-password-input').value;
                 if (pwd !== app.adminPasswordHash) {
                     const err = document.getElementById('admin-login-error');
-                    err.innerText = "ACCESS DENIED: INVALID MASTER KEY"; err.classList.remove('hidden'); return;
+                    err.innerText = "DENIED: INVALID MATRIX CODE"; err.classList.remove('hidden'); return;
                 }
                 app.role = 'admin';
-                app.unitName = 'MOTIONGRID COMMAND';
+                app.unitName = 'TELETRAAN-1 COMMAND';
                 app.unitDocId = app.userId;
                 document.getElementById('logout-btn').classList.remove('hidden');
                 showScreen('admin-screen');
@@ -727,7 +739,7 @@
                 document.getElementById('admin-login-error').classList.add('hidden');
                 
                 document.getElementById('logout-btn').classList.add('hidden');
-                updateStatus('SUBSPACE OFFLINE');
+                updateStatus('TELETRAAN-1 OFFLINE');
                 showScreen('role-screen');
             },
 
@@ -736,7 +748,7 @@
                 try {
                     const myRef = doc(app.db, 'artifacts', app.appId, 'public', 'data', 'units', app.unitDocId);
                     await setDoc(myRef, { status: statusVal, lastUpdated: serverTimestamp() }, { merge: true });
-                } catch(e) { showAlert("ERROR", "Failed to update tactical status."); }
+                } catch(e) { showAlert("ERROR", "Failed to update directive."); }
             },
 
             triggerSOS: async () => {
@@ -745,9 +757,9 @@
                     const myRef = doc(app.db, 'artifacts', app.appId, 'public', 'data', 'units', app.unitDocId);
                     await setDoc(myRef, { sos: true, status: 'breakdown', lastUpdated: serverTimestamp() }, { merge: true });
                     document.getElementById('unit-status-selector').value = 'breakdown';
-                    showAlert("RED ALERT ACTIVE", "MotionGrid Command has been signaled with your exact distress coordinates.");
+                    showAlert("DISTRESS BEACON", "Teletraan-1 has received your exact coordinates. Hold the line.");
                 } catch(e) {
-                    showAlert("ERROR", "Failed to transmit distress signal.");
+                    showAlert("ERROR", "Failed to transmit beacon.");
                 }
             },
 
@@ -762,7 +774,7 @@
             },
 
             startTracking: () => {
-                if (!navigator.geolocation) { showAlert('SYSTEM ERROR', 'Subspace GPS not supported.'); return; }
+                if (!navigator.geolocation) { showAlert('SYSTEM ERROR', 'GPS hardware offline.'); return; }
                 updateStatus('LOCKING SATELLITE...');
 
                 const myRef = doc(app.db, 'artifacts', app.appId, 'public', 'data', 'units', app.unitDocId);
@@ -783,11 +795,11 @@
 
                         const statusLabel = document.getElementById('unit-status-label');
                         if(data.status && data.status !== 'in_transit') {
-                            statusLabel.innerText = `STATUS: ${data.status.replace('_', ' ').toUpperCase()}`;
-                            statusLabel.className = "text-[10px] font-lcars text-lcars-red tracking-widest uppercase font-bold truncate";
+                            statusLabel.innerText = `${data.status.replace('_', ' ').toUpperCase()}`;
+                            statusLabel.className = "text-[10px] font-cyber text-cyber-red tracking-widest uppercase font-bold truncate";
                         } else {
-                            statusLabel.innerText = `IMPULSE ACTIVE`;
-                            statusLabel.className = "text-[10px] font-lcars text-lcars-gold tracking-widest uppercase truncate";
+                            statusLabel.innerText = `OPTICS ONLINE`;
+                            statusLabel.className = "text-[10px] font-cyber text-cyber-neon tracking-widest uppercase truncate";
                         }
                     }
                 });
@@ -796,7 +808,7 @@
                     async (position) => {
                         const { latitude, longitude, speed } = position.coords;
                         app.latestCoords = [latitude, longitude];
-                        updateStatus('SUBSPACE LINKED');
+                        updateStatus('TELETRAAN-1 ONLINE');
                         
                         document.getElementById('u-coords-display').innerText = `${latitude.toFixed(3)}, ${longitude.toFixed(3)}`;
                         const speedKmh = speed ? (speed * 3.6).toFixed(1) : '0.0';
@@ -813,20 +825,21 @@
                                         attribution: '&copy; OpenStreetMap contributors'
                                     }).addTo(app.unitMap);
                                     
-                                    const starshipSvg = `
-                                        <div class="starship-marker w-10 h-10 relative">
-                                            <div class="absolute inset-0 bg-lcars-blue/30 rounded-full animate-ping"></div>
-                                            <svg class="w-8 h-8 text-lcars-gold drop-shadow-[0_0_8px_#FF9900] z-10" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M12 2L2 22L12 18L22 22L12 2Z" />
-                                                <circle cx="12" cy="14" r="3" class="warp-nacelle text-lcars-blue" fill="currentColor" />
+                                    // Mecha Autobot Shield Marker
+                                    const autobotSvg = `
+                                        <div class="autobot-marker w-12 h-12 relative">
+                                            <div class="absolute inset-0 bg-cyber-red/20 rounded-full animate-ping"></div>
+                                            <svg class="w-10 h-10 text-cyber-red drop-shadow-[0_0_8px_#E0162B] z-10" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M12 2 L4 8 L4 22 L12 18 L20 22 L20 8 Z" />
+                                                <circle cx="12" cy="12" r="3" class="energon-core text-cyber-neon" fill="currentColor" />
                                             </svg>
                                         </div>
                                     `;
 
                                     const uIcon = L.divIcon({
                                         className: 'custom-div-icon',
-                                        html: starshipSvg,
-                                        iconSize: [40, 40], iconAnchor: [20, 20]
+                                        html: autobotSvg,
+                                        iconSize: [48, 48], iconAnchor: [24, 24]
                                     });
                                     app.unitMarker = L.marker([latitude, longitude], {icon: uIcon}).addTo(app.unitMap);
 
@@ -847,23 +860,23 @@
                             catch(e) {}
                         }
                     },
-                    (error) => { updateStatus('SUBSPACE LOST', true); },
+                    (error) => { updateStatus('SIGNAL LOST', true); },
                     { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
                 );
             },
 
             setDestination: async () => {
                 const query = document.getElementById('nav-destination-input').value.trim();
-                if(!query) return showAlert("INPUT ERROR", "Please enter a destination address.");
+                if(!query) return showAlert("DATA ERROR", "Enter target coordinates.");
 
-                updateStatus('SCANNING GPS...');
+                updateStatus('SCANNING GRID...');
                 try {
                     const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
                     const results = await response.json();
                     
                     if(!results || results.length === 0) {
-                        updateStatus('SUBSPACE LINKED');
-                        return showAlert("NOT FOUND", "Destination coordinates could not be resolved.");
+                        updateStatus('TELETRAAN-1 ONLINE');
+                        return showAlert("NOT FOUND", "Target coordinates unresolvable.");
                     }
 
                     const destLat = parseFloat(results[0].lat);
@@ -872,8 +885,8 @@
                     app.hasArrived = false;
 
                     const destIconHtml = `
-                        <div class="w-8 h-8 rounded-full bg-lcars-red flex items-center justify-center text-white border-2 border-white shadow-[0_0_10px_#CC3333]">
-                            <i class="fa-solid fa-flag text-xs"></i>
+                        <div class="w-8 h-8 bg-cyber-accent text-black flex items-center justify-center border-2 border-white shadow-[0_0_15px_#FFC72C]" style="clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);">
+                            <i class="fa-solid fa-crosshairs text-[10px]"></i>
                         </div>
                     `;
                     const dIcon = L.divIcon({ className: 'custom-div-icon', html: destIconHtml, iconSize: [32, 32], iconAnchor: [16, 16] });
@@ -886,11 +899,11 @@
 
                     document.getElementById('clear-nav-btn').classList.remove('hidden');
                     app.updateNavigationVector();
-                    updateStatus('SUBSPACE LINKED');
-                    showAlert("COURSE LAID IN", `Destination locked: ${results[0].display_name.substring(0, 40)}...`);
+                    updateStatus('TELETRAAN-1 ONLINE');
+                    showAlert("GROUNDBRIDGE SET", `Target locked: ${results[0].display_name.substring(0, 40)}...`);
                 } catch(e) {
-                    updateStatus('SUBSPACE LINKED');
-                    showAlert("ERROR", "Failed to resolve destination coordinates.");
+                    updateStatus('TELETRAAN-1 ONLINE');
+                    showAlert("ERROR", "Grid resolution failed.");
                 }
             },
 
@@ -902,10 +915,10 @@
                 }
 
                 app.routeLine = L.polyline([app.latestCoords, app.destCoords], {
-                    color: '#FF9900',
+                    color: '#FFC72C',
                     weight: 4,
-                    dashArray: '6, 8',
-                    opacity: 0.8
+                    dashArray: '8, 8',
+                    opacity: 0.9
                 }).addTo(app.unitMap);
 
                 const from = L.latLng(app.latestCoords[0], app.latestCoords[1]);
@@ -914,15 +927,16 @@
                 const distanceKm = distanceMeters / 1000;
 
                 const navLabel = document.getElementById('nav-instruction-label');
-                navLabel.innerHTML = `COURSE: <b class="text-lcars-gold">${distanceKm >= 1 ? distanceKm.toFixed(2) + ' km' : distanceMeters.toFixed(0) + ' m'}</b> TO TARGET`;
+                navLabel.innerHTML = `DISTANCE: <b class="text-cyber-accent">${distanceKm >= 1 ? distanceKm.toFixed(2) + ' km' : distanceMeters.toFixed(0) + ' m'}</b> TO TARGET`;
 
-                // Proximity Arrival Alert (within 200 meters)
                 if(distanceMeters <= 200 && !app.hasArrived) {
                     app.hasArrived = true;
                     app.updateMyUnitStatus('pit_stop');
-                    document.getElementById('emergency-banner-text').innerText = `ARRIVAL ALERT: TARGET DESTINATION REACHED`;
+                    document.getElementById('emergency-banner-text').innerText = `GROUNDBRIDGE SECURED: TARGET REACHED`;
                     document.getElementById('hq-emergency-banner').classList.remove('hidden');
-                    showAlert("DESTINATION REACHED", "Vessel has successfully arrived at the designated coordinates.");
+                    document.getElementById('hq-emergency-banner').classList.replace('bg-cyber-red', 'bg-cyber-accent');
+                    document.getElementById('hq-emergency-banner').classList.replace('text-white', 'text-black');
+                    showAlert("TARGET REACHED", "Operative has arrived at designated coordinates.");
                 }
             },
 
@@ -939,7 +953,7 @@
                 }
                 document.getElementById('nav-destination-input').value = '';
                 document.getElementById('clear-nav-btn').classList.add('hidden');
-                document.getElementById('nav-instruction-label').innerText = 'NAVIGATION: STANDBY';
+                document.getElementById('nav-instruction-label').innerText = 'GROUNDBRIDGE: STANDBY';
             },
 
             initMap: () => {
@@ -961,14 +975,14 @@
                 if(app.unitMap && app.latestCoords) {
                     app.unitMap.setView(app.latestCoords, 16, { animate: true });
                 } else {
-                    showAlert("NOTICE", "Acquiring subspace coordinates...");
+                    showAlert("NOTICE", "Acquiring satellite lock...");
                 }
             },
 
             pointTrueNorthUnitMap: () => {
                 if(app.unitMap && app.latestCoords) {
                     app.unitMap.setView(app.unitMap.getCenter(), app.unitMap.getZoom(), { animate: true });
-                    showAlert("TRUE NORTH", "Tactical grid aligned to True North (0°).");
+                    showAlert("COMPASS", "Grid aligned to True North (0°).");
                 }
             },
 
@@ -987,7 +1001,7 @@
             pointTrueNorthAdminMap: () => {
                 if(app.map) {
                     app.map.setView(app.map.getCenter(), app.map.getZoom(), { animate: true });
-                    showAlert("TRUE NORTH", "Command radar aligned to True North (0°).");
+                    showAlert("COMPASS", "Teletraan-1 Grid aligned to True North (0°).");
                 }
             },
 
@@ -1015,20 +1029,22 @@
                         if (data.sos) {
                             emergencyTriggered = true;
                             app.activeEmergencyUnit = docSnap.id;
-                            document.getElementById('emergency-banner-text').innerText = `RED ALERT: [ ${data.name} ]`;
+                            document.getElementById('emergency-banner-text').innerText = `DECEPTICON THREAT: [ ${data.name} ]`;
                             document.getElementById('hq-emergency-banner').classList.remove('hidden');
+                            document.getElementById('hq-emergency-banner').classList.add('bg-cyber-red', 'text-white');
+                            document.getElementById('hq-emergency-banner').classList.remove('bg-cyber-accent', 'text-black');
                         }
 
                         if (app.map && data.lat && data.lng) {
                             activeCount++;
-                            let glowColor = data.sos ? '#CC3333' : (data.status === 'breakdown' ? '#CC3333' : '#FF9900');
+                            let glowColor = data.sos ? '#E0162B' : (data.status === 'breakdown' ? '#E0162B' : '#0052A5');
                             
                             const animatedShipHtml = `
-                                <div class="starship-marker w-10 h-10 relative flex items-center justify-center">
-                                    <div class="absolute inset-0 bg-lcars-blue/20 rounded-full animate-pulse"></div>
-                                    <svg class="w-9 h-9 drop-shadow-[0_0_10px_${glowColor}] z-10 text-lcars-gold" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12 2L2 22L12 18L22 22L12 2Z" />
-                                        <circle cx="12" cy="14" r="3" class="warp-nacelle text-lcars-blue" fill="currentColor" />
+                                <div class="autobot-marker w-12 h-12 relative flex items-center justify-center">
+                                    <div class="absolute inset-0 bg-[${glowColor}]/20 rounded-full animate-pulse"></div>
+                                    <svg class="w-10 h-10 drop-shadow-[0_0_10px_${glowColor}] z-10" viewBox="0 0 24 24" fill="${glowColor}">
+                                        <path d="M12 2 L4 8 L4 22 L12 18 L20 22 L20 8 Z" />
+                                        <circle cx="12" cy="12" r="3" class="energon-core text-cyber-neon" fill="currentColor" />
                                     </svg>
                                 </div>
                             `;
@@ -1036,16 +1052,16 @@
                             const customIcon = L.divIcon({
                                 className: 'custom-div-icon',
                                 html: animatedShipHtml,
-                                iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -20]
+                                iconSize: [48, 48], iconAnchor: [24, 24], popupAnchor: [0, -24]
                             });
 
                             const popupHtml = `
-                                <div class="text-center p-2 font-lcars text-xs">
-                                    <strong class="text-lcars-blue text-sm uppercase tracking-wider block border-b border-lcars-surface pb-1 mb-1">${data.name}</strong>
-                                    <span class="text-[9px] text-gray-400 uppercase">Status: <b class="text-lcars-gold">${(data.status || 'IN_TRANSIT').replace('_', ' ')}</b></span><br>
-                                    <span class="text-[9px] text-gray-400 uppercase">Velocity: <b>${data.speed || '0.0'} km/h</b></span><br>
-                                    ${data.sos ? '<span class="text-[10px] text-lcars-red font-bold block my-1">🚨 RED ALERT ACTIVE</span>' : ''}
-                                    <button onclick="app.switchAdminChat('${docSnap.id}'); app.switchAdminTab('dashboard');" class="mt-2 lcars-button-blue px-3 py-1 text-[10px] w-full"><span>OPEN COMM</span></button>
+                                <div class="text-center p-2 font-cyber text-xs">
+                                    <strong class="text-white text-sm uppercase tracking-widest block border-b border-cyber-red pb-1 mb-1">${data.name}</strong>
+                                    <span class="text-[9px] text-cyber-silver uppercase">Status: <b class="text-cyber-accent">${(data.status || 'IN_TRANSIT').replace('_', ' ')}</b></span><br>
+                                    <span class="text-[9px] text-cyber-silver uppercase">Velocity: <b>${data.speed || '0.0'} km/h</b></span><br>
+                                    ${data.sos ? '<span class="text-[10px] text-cyber-red font-bold block my-1 animate-pulse">🚨 CRITICAL DAMAGE</span>' : ''}
+                                    <button onclick="app.switchAdminChat('${docSnap.id}'); app.switchAdminTab('dashboard');" class="mt-2 cyber-button-blue px-3 py-1 text-[9px] w-full tracking-widest"><span>OPEN COMM</span></button>
                                 </div>
                             `;
 
@@ -1089,8 +1105,8 @@
                 ['dashboard', 'analytics', 'manage', 'settings'].forEach(id => {
                     document.getElementById(`admin-view-${id}`).classList.add('hidden');
                     const btn = document.getElementById(`admin-tab-${id}`);
-                    btn.classList.remove('border-lcars-blue', 'text-lcars-blue', 'bg-lcars-blue/10');
-                    btn.classList.add('border-transparent', 'text-gray-400');
+                    btn.classList.remove('border-cyber-blue', 'text-cyber-blue', 'bg-cyber-blue/10');
+                    btn.classList.add('border-transparent', 'text-cyber-silver');
                 });
                 
                 document.getElementById(`admin-view-${tabId}`).classList.remove('hidden');
@@ -1104,8 +1120,8 @@
                 }
                 
                 const activeBtn = document.getElementById(`admin-tab-${tabId}`);
-                activeBtn.classList.remove('border-transparent', 'text-gray-400');
-                activeBtn.classList.add('border-lcars-blue', 'text-lcars-blue', 'bg-lcars-blue/10');
+                activeBtn.classList.remove('border-transparent', 'text-cyber-silver');
+                activeBtn.classList.add('border-cyber-blue', 'text-cyber-blue', 'bg-cyber-blue/10');
             },
 
             switchUnitMainTab: (tab) => {
@@ -1116,8 +1132,8 @@
                 const viewC = document.getElementById('unit-view-comms');
 
                 if (tab === 'map') {
-                    tabM.className = "flex-1 py-2.5 border-b-2 border-lcars-gold text-lcars-gold bg-lcars-gold/10 transition-colors";
-                    tabC.className = "flex-1 py-2.5 border-b-2 border-transparent text-gray-400 hover:text-white transition-colors";
+                    tabM.className = "flex-1 py-3 border-b-2 border-cyber-red text-cyber-red bg-cyber-red/10 transition-colors";
+                    tabC.className = "flex-1 py-3 border-b-2 border-transparent text-cyber-silver hover:text-white transition-colors";
                     viewM.classList.remove('hidden');
                     viewM.classList.add('flex');
                     viewC.classList.add('hidden');
@@ -1128,8 +1144,8 @@
                         }, 100);
                     }
                 } else {
-                    tabC.className = "flex-1 py-2.5 border-b-2 border-lcars-gold text-lcars-gold bg-lcars-gold/10 transition-colors";
-                    tabM.className = "flex-1 py-2.5 border-b-2 border-transparent text-gray-400 hover:text-white transition-colors";
+                    tabC.className = "flex-1 py-3 border-b-2 border-cyber-neon text-cyber-neon bg-cyber-neon/10 transition-colors";
+                    tabM.className = "flex-1 py-3 border-b-2 border-transparent text-cyber-silver hover:text-white transition-colors";
                     viewC.classList.remove('hidden');
                     viewC.classList.add('flex');
                     viewM.classList.add('hidden');
@@ -1142,7 +1158,7 @@
                 const pin = document.getElementById('add-unit-pin').value.trim();
                 const photoInput = document.getElementById('add-unit-photo');
 
-                if (!name || !pin) return showAlert("INPUT ERROR", "Callsign and Code required.");
+                if (!name || !pin) return showAlert("DATA ERROR", "Designation and Spark Code required.");
 
                 let photoUrl = null;
                 if (photoInput.files && photoInput.files[0]) {
@@ -1156,42 +1172,42 @@
                     document.getElementById('add-unit-name').value = '';
                     document.getElementById('add-unit-pin').value = '';
                     document.getElementById('add-unit-photo').value = '';
-                    showAlert("SUCCESS", `Vessel ${name} successfully commissioned.`);
-                } catch(e) { showAlert("ERROR", "Subspace write failed."); }
+                    showAlert("SUCCESS", `Operative ${name} online and responding.`);
+                } catch(e) { showAlert("ERROR", "Data Core write failed."); }
             },
 
             renderManageUnits: () => {
                 const grid = document.getElementById('manage-units-grid');
                 grid.innerHTML = '';
                 const entries = Object.entries(app.unitsList);
-                document.getElementById('registered-units-count').innerText = `${entries.length} VESSELS`;
+                document.getElementById('registered-units-count').innerText = `${entries.length} ONLINE`;
 
                 if (entries.length === 0) {
-                    grid.innerHTML = `<p class="text-gray-500 font-lcars text-xs">NO VESSELS COMMISSIONED.</p>`; return;
+                    grid.innerHTML = `<p class="text-cyber-silver font-cyber text-xs">NO OPERATIVES DETECTED.</p>`; return;
                 }
                 
                 for (const [id, data] of entries) {
                     const card = document.createElement('div');
-                    card.className = "lcars-panel p-3 rounded-2xl flex items-center gap-3 border border-lcars-surface hover:border-lcars-blue transition-colors relative overflow-hidden";
+                    card.className = "bg-cyber-panel p-3 flex items-center gap-3 border border-cyber-surface hover:border-cyber-blue transition-colors relative overflow-hidden shadow-[0_0_10px_rgba(0,0,0,0.5)]";
                     
                     let avatar = data.photoUrl 
-                        ? `<img src="${data.photoUrl}" class="h-12 w-12 rounded-xl object-cover border border-lcars-surface shrink-0">`
-                        : `<div class="h-12 w-12 rounded-xl bg-lcars-surface flex items-center justify-center font-lcars font-bold text-base text-lcars-gold border border-lcars-surface shrink-0">${getInitials(data.name)}</div>`;
+                        ? `<img src="${data.photoUrl}" class="h-12 w-12 object-cover border border-cyber-surface shrink-0" style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">`
+                        : `<div class="h-12 w-12 bg-black flex items-center justify-center font-cyber font-bold text-base text-cyber-blue border border-cyber-blue shrink-0" style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">${getInitials(data.name)}</div>`;
 
                     let statusBadge = data.sos 
-                        ? `<span class="text-[7px] bg-lcars-red text-white px-2 py-0.5 rounded-full tracking-wider uppercase animate-pulse">RED ALERT</span>`
-                        : `<span class="text-[7px] bg-lcars-gold/20 text-lcars-gold px-2 py-0.5 rounded-full tracking-wider uppercase">${(data.status || 'IN_TRANSIT').replace('_', ' ')}</span>`;
+                        ? `<span class="text-[7px] bg-cyber-red text-white px-2 py-0.5 tracking-widest uppercase animate-pulse">CRITICAL</span>`
+                        : `<span class="text-[7px] bg-cyber-accent/20 text-cyber-accent px-2 py-0.5 tracking-widest uppercase">${(data.status || 'IN_TRANSIT').replace('_', ' ')}</span>`;
 
                     card.innerHTML = `
                         <div class="flex w-full items-center gap-3">
                             ${avatar}
-                            <div class="flex-1 overflow-hidden font-lcars">
-                                <h4 class="font-bold text-lcars-blue truncate text-base">${data.name}</h4>
-                                <p class="text-[9px] text-gray-400 mb-1">CODE: <code class="text-lcars-gold">${data.pin || 'NONE'}</code> | <span class="text-lcars-blue">${data.speed || '0'} km/h</span></p>
+                            <div class="flex-1 overflow-hidden font-cyber">
+                                <h4 class="font-bold text-white truncate text-sm tracking-widest">${data.name}</h4>
+                                <p class="text-[8px] text-cyber-silver mb-1 tracking-widest">CODE: <code class="text-cyber-neon">${data.pin || 'NONE'}</code> | <span class="text-cyber-accent">${data.speed || '0'} km/h</span></p>
                                 ${statusBadge}
                             </div>
-                            <button onclick="app.openEditUnitModal('${id}')" class="bg-lcars-surface hover:bg-lcars-blue hover:text-black text-lcars-gold h-9 w-9 rounded-xl flex items-center justify-center transition-colors shrink-0">
-                                <i class="fa-solid fa-pen-to-square text-xs"></i>
+                            <button onclick="app.openEditUnitModal('${id}')" class="bg-black hover:bg-cyber-blue hover:text-white text-cyber-blue h-9 w-9 flex items-center justify-center transition-colors border border-cyber-blue shrink-0">
+                                <i class="fa-solid fa-wrench text-xs"></i>
                             </button>
                         </div>
                     `;
@@ -1219,17 +1235,17 @@
                 const newPin = document.getElementById('edit-unit-pin').value.trim();
                 const fileInput = document.getElementById('edit-unit-photo');
                 
-                if(!newName || !newPin) return showAlert("ERROR", "Callsign and Code required.");
+                if(!newName || !newPin) return showAlert("ERROR", "Designation and Spark Code required.");
 
                 let updateData = { name: newName, pin: newPin, status: document.getElementById('edit-unit-status').value };
                 if (fileInput.files && fileInput.files[0]) {
-                    try { updateData.photoUrl = await processImageFile(fileInput.files[0]); } catch (e) { return showAlert("ERROR", "Image error."); }
+                    try { updateData.photoUrl = await processImageFile(fileInput.files[0]); } catch (e) { return showAlert("ERROR", "Image scan error."); }
                 }
 
                 try {
                     await setDoc(doc(app.db, 'artifacts', app.appId, 'public', 'data', 'units', id), updateData, { merge: true });
                     document.getElementById('edit-unit-modal').classList.add('hidden');
-                } catch (e) { showAlert("ERROR", "Save failed."); }
+                } catch (e) { showAlert("ERROR", "Upgrade failed."); }
             },
 
             deleteUnit: async () => {
@@ -1238,7 +1254,7 @@
                 try {
                     await deleteDoc(doc(app.db, 'artifacts', app.appId, 'public', 'data', 'units', id));
                     document.getElementById('edit-unit-modal').classList.add('hidden');
-                } catch(e) { showAlert("ERROR", "Decommission failed."); }
+                } catch(e) { showAlert("ERROR", "Deactivation failed."); }
             },
 
             updateAdminPassword: async () => {
@@ -1251,14 +1267,14 @@
                     await setDoc(doc(app.db, 'artifacts', app.appId, 'public', 'data', 'settings', 'admin'), { password: p1 }, { merge: true });
                     app.adminPasswordHash = p1;
                     document.getElementById('new-password').value = ''; document.getElementById('confirm-password').value = '';
-                    showAlert("SUCCESS", "Master Clearance Code Updated.");
+                    showAlert("SUCCESS", "Matrix Protocol Updated.");
                 } catch (e) { showAlert("ERROR", "Update failed."); }
             },
 
             updateAdminDropdown: () => {
                 const select = document.getElementById('admin-chat-select');
                 const currentValue = select.value;
-                let html = `<option value="group">📢 ALL FLEET BROADCAST</option>`;
+                let html = `<option value="group">📢 GLOBAL BROADCAST</option>`;
                 for (const [id, data] of Object.entries(app.unitsList)) { html += `<option value="${id}">DIRECT: ${data.name}</option>`; }
                 select.innerHTML = html;
                 if(currentValue === 'group' || app.unitsList[currentValue]) { select.value = currentValue; } else { app.switchAdminChat('group'); }
@@ -1271,13 +1287,13 @@
                 const input = document.getElementById('unit-message-input');
 
                 if (tabName === 'private') {
-                    tabP.className = "flex-1 py-2 border-b border-lcars-blue text-lcars-blue transition-colors bg-lcars-blue/10";
-                    tabG.className = "flex-1 py-2 border-b border-transparent text-gray-400 hover:text-white transition-colors";
-                    input.placeholder = "DIRECT TO COMMAND...";
+                    tabP.className = "flex-1 py-2.5 border-b-2 border-cyber-neon text-cyber-neon transition-colors bg-cyber-neon/10";
+                    tabG.className = "flex-1 py-2.5 border-b-2 border-transparent text-cyber-silver hover:text-white transition-colors";
+                    input.placeholder = "DIRECT TO TELETRAAN-1...";
                 } else {
-                    tabG.className = "flex-1 py-2 border-b border-lcars-gold text-lcars-gold transition-colors bg-lcars-gold/10";
-                    tabP.className = "flex-1 py-2 border-b border-transparent text-gray-400 hover:text-white transition-colors";
-                    input.placeholder = "BROADCAST TO FLEET...";
+                    tabG.className = "flex-1 py-2.5 border-b-2 border-cyber-accent text-cyber-accent transition-colors bg-cyber-accent/10";
+                    tabP.className = "flex-1 py-2.5 border-b-2 border-transparent text-cyber-silver hover:text-white transition-colors";
+                    input.placeholder = "BROADCAST ON OPEN FREQUENCY...";
                 }
                 app.renderChat();
             },
@@ -1285,7 +1301,7 @@
             switchAdminChat: (target) => {
                 app.adminChatTarget = target;
                 document.getElementById('admin-chat-select').value = target;
-                document.getElementById('admin-message-input').placeholder = target === 'group' ? "BROADCAST TO FLEET..." : `DIRECT TO ${app.unitsList[target]?.name || "VESSEL"}...`;
+                document.getElementById('admin-message-input').placeholder = target === 'group' ? "GLOBAL DIRECTIVE..." : `DIRECT TO ${app.unitsList[target]?.name || "OPERATIVE"}...`;
                 app.renderChat();
             },
 
@@ -1309,25 +1325,25 @@
                     const isAdminMsg = msg.isAdmin;
                     
                     const wrapper = document.createElement('div');
-                    wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} mb-2.5 animate-slide-up`;
+                    wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} mb-3 animate-slide-up`;
                     
                     let themeClass = '';
-                    if (isMe) themeClass = app.role === 'admin' ? 'bg-lcars-blue text-black font-bold' : 'bg-lcars-gold text-black font-bold';
-                    else if (isAdminMsg) themeClass = 'bg-black text-lcars-blue border border-lcars-blue';
-                    else themeClass = 'bg-lcars-panel text-lcars-gold border-l-2 border-lcars-gold';
+                    if (isMe) themeClass = app.role === 'admin' ? 'bg-cyber-blue text-white shadow-[0_0_10px_rgba(0,82,165,0.4)]' : 'bg-cyber-red text-white shadow-[0_0_10px_rgba(224,22,43,0.4)]';
+                    else if (isAdminMsg) themeClass = 'bg-black text-cyber-neon border border-cyber-neon';
+                    else themeClass = 'bg-cyber-panel text-white border-l-2 border-cyber-accent';
 
-                    let contentHtml = `<p class="break-words">${msg.text}</p>`;
+                    let contentHtml = `<p class="break-words font-sans text-sm">${msg.text}</p>`;
                     if (msg.messageType === 'audio') {
-                        contentHtml = `<audio controls src="${msg.mediaUrl}" class="max-w-full h-9 mt-1 rounded-full outline-none opacity-90"></audio>`;
+                        contentHtml = `<audio controls src="${msg.mediaUrl}" class="max-w-full h-9 mt-1 outline-none opacity-90 rounded-sm"></audio>`;
                     } else if (msg.messageType === 'video') {
-                        contentHtml = `<video controls src="${msg.mediaUrl}" class="max-w-full max-h-40 mt-1 rounded border border-white/20"></video>`;
+                        contentHtml = `<video controls src="${msg.mediaUrl}" class="max-w-full max-h-40 mt-1 border border-white/20"></video>`;
                     } else if (msg.messageType === 'image') {
-                        contentHtml = `<img src="${msg.mediaUrl}" class="max-w-full max-h-40 mt-1 rounded border border-white/20 object-contain">`;
+                        contentHtml = `<img src="${msg.mediaUrl}" class="max-w-full max-h-40 mt-1 border border-white/20 object-contain">`;
                     }
 
                     wrapper.innerHTML = `
-                        <span class="text-[8px] font-lcars tracking-wider text-gray-400 mb-0.5 px-1 uppercase">${msg.senderName} ${isAdminMsg && !isMe ? '<i class="fa-solid fa-shield-halved text-lcars-blue ml-0.5"></i>' : ''}</span>
-                        <div class="px-3 py-2 rounded-2xl max-w-[90%] ${themeClass} font-lcars text-xs tracking-wide">
+                        <span class="text-[8px] font-cyber tracking-widest text-cyber-silver mb-0.5 px-1 uppercase">${msg.senderName} ${isAdminMsg && !isMe ? '<i class="fa-solid fa-satellite text-cyber-neon ml-0.5"></i>' : ''}</span>
+                        <div class="px-3 py-2 max-w-[90%] ${themeClass} font-cyber text-xs tracking-wider" style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">
                             ${contentHtml}
                         </div>
                     `;
@@ -1376,7 +1392,7 @@
                 if (app.isRecording) {
                     app.mediaRecorder.stop();
                     app.isRecording = false;
-                    btn.classList.remove('animate-pulse', 'bg-lcars-red', 'text-white');
+                    btn.classList.remove('animate-pulse', 'bg-cyber-red', 'text-white', 'border-cyber-red');
                     return;
                 }
                 
@@ -1392,9 +1408,9 @@
                     };
                     app.mediaRecorder.start();
                     app.isRecording = true;
-                    btn.classList.add('animate-pulse', 'bg-lcars-red', 'text-white');
+                    btn.classList.add('animate-pulse', 'bg-cyber-red', 'text-white', 'border-cyber-red');
                 } catch(e) { 
-                    showAlert('ERROR', 'Subspace audio unavailable.'); 
+                    showAlert('ERROR', 'Audio interface unavailable.'); 
                 }
             },
 
@@ -1427,10 +1443,10 @@
                         timestamp: serverTimestamp(), isAdmin: role === 'admin', chatType: chatType, 
                         targetUnitId: target, messageType: type, mediaUrl: url
                     });
-                    updateStatus('SUBSPACE LINKED');
+                    updateStatus('TELETRAAN-1 ONLINE');
                 } catch(e) { 
-                    showAlert("ERROR", "Subspace upload failed."); 
-                    updateStatus('SUBSPACE LINKED');
+                    showAlert("ERROR", "Data Core upload failed."); 
+                    updateStatus('TELETRAAN-1 ONLINE');
                 }
             }
         };
@@ -1483,12 +1499,12 @@
                 });
 
                 setTimeout(() => {
-                    updateStatus('SUBSPACE ONLINE');
+                    updateStatus('TELETRAAN-1 ONLINE');
                     showScreen('role-screen');
-                }, 800); 
+                }, 1200); 
 
             } catch (error) {
-                document.getElementById('loading-screen').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-lcars-red text-3xl mb-3"></i><p class="text-white text-xs font-lcars tracking-widest uppercase">SYS_FAIL<br><span class="text-[10px] text-lcars-red">${error.message}</span></p>`;
+                document.getElementById('loading-screen').innerHTML = `<i class="fa-solid fa-skull text-cyber-red text-3xl mb-3"></i><p class="text-white text-xs font-cyber tracking-widest uppercase">FATAL ERROR<br><span class="text-[10px] text-cyber-red">${error.message}</span></p>`;
             }
         };
 
